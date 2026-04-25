@@ -37,29 +37,29 @@ Interpretation:
 ---
 
 ## In progress
-- [ ] Confirm CDS/protein pairing more rigorously using shared ID and translation-length checks
-- [ ] Generate QC tables for CDS lengths and protein lengths
-- [ ] Flag short proteins for review rather than immediate removal
-- [ ] Run BUSCO in **protein mode** on the amino acid FASTA
+- [X] Confirm CDS/protein pairing more rigorously using shared ID and translation-length checks
+- [X] Generate QC tables for CDS lengths and protein lengths
+- [X] Flag short proteins for review rather than immediate removal
+- [X] Run BUSCO in **protein mode** on the amino acid FASTA
 
 ---
 
 ## Immediate next tasks
 
 ### 1. Confirm sequence pairing and translation plausibility
-- [ ] Check shared IDs across nucleotide and protein FASTA files
-- [ ] Check whether CDS lengths are divisible by 3
-- [ ] Check whether protein lengths are compatible with CDS lengths
+- [X] Check shared IDs across nucleotide and protein FASTA files
+- [X] Check whether CDS lengths are divisible by 3
+- [X] Check whether protein lengths are compatible with CDS lengths
 
 ### 2. Generate QC tables
-- [ ] `01_qc/protein_lengths.tsv`
-- [ ] `01_qc/cds_lengths.tsv`
-- [ ] `01_qc/proteins_lt50aa.tsv`
-- [ ] `01_qc/proteins_lt100aa.tsv`
-- [ ] `01_qc/proteins_lt150aa.tsv`
+- [X] `01_qc/protein_lengths.tsv`
+- [X] `01_qc/cds_lengths.tsv`
+- [X] `01_qc/proteins_lt50aa.tsv`
+- [X] `01_qc/proteins_lt100aa.tsv`
+- [X] `01_qc/proteins_lt150aa.tsv`
 
 ### 3. Run BUSCO on proteins
-- [ ] Run BUSCO with `-m proteins`
+- [X] Run BUSCO with `-m proteins`
 - [ ] Record lineage dataset used
 - [ ] Save `short_summary` output
 - [ ] Save the full BUSCO result directory for downstream interpretation
