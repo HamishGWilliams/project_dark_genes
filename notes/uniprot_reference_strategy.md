@@ -21,3 +21,40 @@ Apply this interpretation rule in the master annotation table:
 - **No sequence hit and no domain/function support** = stronger dark-gene candidate
 
 This project should therefore use a **hierarchical reference strategy**, not a single undifferentiated UniProt database.
+
+# How to interpret the hits
+
+""Swiss-Prot hit""
+
+- Treat as your preferred annotation.
+- If the hit is strong and coverage is good, this is your best sequence-based functional assignment.
+
+**Cnidarian TrEMBL hit only**
+- Treat as homology support, and sometimes family-level support.
+
+Use conservative wording:
+
+- “X-like protein”
+- “putative homolog of X”
+- “member of Y family”
+
+Do not treat this as equal to reviewed Swiss-Prot evidence.
+
+**Broad metazoan TrEMBL fallback hit only**
+- Treat as weak-to-moderate sequence support unless corroborated.
+- This can rescue a protein from being “sequence-dark,” but it should not automatically rescue it from being “function-dark.”
+
+For a strong function claim, require corroboration from:
+- InterPro domains
+- eggNOG orthology
+- domain architecture consistency
+- ideally expression and genomic plausibility
+
+**What this means for dark-gene logic**
+
+classify results like this:
+
+- Swiss-Prot hit ? annotated
+- TrEMBL cnidarian/metazoan hit only ? sequence-supported, but lower confidence
+- No sequence hit, but InterPro/eggNOG support ? not fully dark
+- No Swiss-Prot, no curated TrEMBL, no InterPro, no eggNOG ? strong dark-gene candidate

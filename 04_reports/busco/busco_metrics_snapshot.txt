@@ -1,0 +1,5 @@
+	C:95.6%[S:52.9%,D:42.7%],F:2.6%,M:1.8%,n:954	   
+	912	Complete BUSCOs (C)			   
+	25	Fragmented BUSCOs (F)			   
+	17	Missing BUSCOs (M)			   
+	954	Total BUSCO groups searched		   

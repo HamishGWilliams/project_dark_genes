@@ -1,0 +1,21 @@
+diamond v2.1.10.164 (C) Max Planck Society for the Advancement of Science, Benjamin Buchfink, University of Tuebingen
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 40
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Database input file: /path/to/uniprot_reference_proteins.fasta
+Opening the database file... 
+Error opening file /path/to/uniprot_reference_proteins.fasta: No such file or directory
+diamond v2.1.10.164 (C) Max Planck Society for the Advancement of Science, Benjamin Buchfink, University of Tuebingen
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 32
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Temporary directory: 02_annotation/diamond
+#Target sequences to report alignments for: 25
+Opening the database... 
+Error opening file 02_annotation/db/uniprot_ref: No such file or directory
+awk: fatal: cannot open file `02_annotation/diamond/equina_vs_uniprot_ref.diamond.tsv' for reading (No such file or directory)
+wc: 02_annotation/diamond/equina_vs_uniprot_ref.diamond.tsv: No such file or directory
