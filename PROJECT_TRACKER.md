@@ -8,6 +8,7 @@
 - `equina_smart.rnam-trna.merged.ggf.curated.remredun.trans.fa.gz`
 - `equina_smart.rnam-trna.merged.ggf.curated.remredun.proteins.gff3.gz`
 - `equina_smartden.arrow4.noredun.fa.gz`
+- RNA-seq data from a multi-stressor experiment including control treatments
 
 ### What these files appear to be
 The current input files now form a coherent annotation set plus genome assembly:
@@ -16,6 +17,7 @@ The current input files now form a coherent annotation set plus genome assembly:
 - `trans.fa.gz` is transcript FASTA matching the EVM-style IDs
 - `proteins.gff3.gz` is the annotation GFF3 linking genes/transcripts/proteins to genomic coordinates
 - `arrow4.noredun.fa.gz` is the genome assembly FASTA
+- RNA-seq data can provide expression evidence, splice support, and treatment responsiveness
 
 Evidence collected so far:
 - Sequence count in nucleotide FASTA: **55,607**
@@ -28,8 +30,9 @@ Evidence collected so far:
 - Maximum protein length: **10,458 aa**
 
 Interpretation:
-- The project can now proceed as a **genome-aware dark-gene workflow** rather than a proteome-only survey
+- The project can now proceed as a **genome-aware and expression-aware dark-gene workflow** rather than a proteome-only survey
 - Candidate dark genes can later be mapped back to genomic coordinates and evaluated in structural context
+- RNA-seq can be used to distinguish expressed dark candidates from unsupported predictions and to prioritise stress-responsive candidates
 
 ---
 
@@ -48,6 +51,7 @@ Interpretation:
 - [x] Located genome assembly FASTA
 - [x] Located GFF3 annotation file
 - [x] Located transcript FASTA
+- [x] Established that RNA-seq data are available for downstream validation and prioritisation
 
 ---
 
@@ -107,6 +111,15 @@ Interpretation:
 - [ ] Summarise exon count, CDS span, transcript span, and scaffold location for each candidate
 - [ ] Use genome context later to help distinguish plausible genes from suspicious models
 
+### 4. Integrate RNA-seq evidence
+- [ ] Organise RNA-seq metadata table with sample IDs, treatment, control/stressor labels, replicate IDs, and file paths
+- [ ] Run raw read QC and adapter/quality trimming if needed
+- [ ] Align reads to the genome or transcriptome
+- [ ] Quantify expression at transcript/gene level
+- [ ] Identify which candidate dark genes are detectably expressed in any condition
+- [ ] Test for differential expression between controls and stressor treatments
+- [ ] Prioritise dark candidates with reproducible expression and/or stress responsiveness
+
 ---
 
 ## Future annotation tasks
@@ -129,18 +142,23 @@ Interpretation:
 - [ ] Run homology-detection-failure control where appropriate
 - [ ] Prioritise top dark-gene candidates for structure/function follow-up
 
+### Expression-aware validation
+- [ ] Require evidence thresholds for expression-supported dark genes
+- [ ] Distinguish constitutive expression from condition-specific expression
+- [ ] Evaluate whether stress-responsive dark genes are enriched among high-confidence candidates
+
 ---
 
 ## Data still useful for stronger final conclusions
 These are not blocking now, but would still help later.
 
-- [ ] RNA-seq read evidence or alignments
 - [ ] Information on how the EVM-derived gene set was generated and filtered
+- [ ] If available, splice-aware read alignments or existing transcript assemblies from the same RNA-seq experiment
 
 These additional data will allow:
-- expression support checks
 - stronger filtering of artefactual dark-gene calls
 - more confident interpretation of duplicated BUSCOs and short ORFs
+- direct comparison between original annotation evidence and current expression evidence
 
 ---
 
@@ -153,6 +171,13 @@ project_dark_genes/
 ├── 02_annotation/
 ├── 03_dark_candidates/
 ├── 04_reports/
+├── 05_rnaseq/
+│   ├── 00_metadata/
+│   ├── 01_qc/
+│   ├── 02_trimmed/
+│   ├── 03_alignment/
+│   ├── 04_quant/
+│   └── 05_de/
 ├── logs/
 └── scripts/
 ```
