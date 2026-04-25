@@ -37,6 +37,7 @@ flowchart TD
     T --> U[OrthoFinder with cnidarian proteomes]
     U --> V[GenEra / HDF control]
     V --> W[High-confidence dark genes]
-```
+
     W --> X[Structure modelling<br/>ColabFold / AlphaFold DB]
     X --> Y[Priority shortlist]
+```
