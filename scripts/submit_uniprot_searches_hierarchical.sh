@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
@@ -34,9 +33,9 @@ DB_NAMES=(
 )
 
 DB_FASTAS=(
-  "02_annotation/reference_dbs/fasta/swissprot_all.fasta"
-  "02_annotation/reference_dbs/fasta/trembl_cnidaria_selected.fasta"
-  "02_annotation/reference_dbs/fasta/metazoa_selected.fasta"
+  "02_annotation/reference_dbs/swissprot_all.fasta"
+  "02_annotation/reference_dbs/trembl_cnidaria_selected.fasta"
+  "02_annotation/reference_dbs/metazoa_selected.fasta"
 )
 
 WORKER_DIAMOND="scripts/run_uniprot_diamond_single_db.sh"
@@ -44,7 +43,7 @@ WORKER_BLASTP="scripts/run_uniprot_blastp_single_db.sh"
 WORKER_EXTRACT="scripts/extract_nohit_from_swissprot_diamond.sh"
 
 cat > "$WORKER_DIAMOND" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --mem=128G
 #SBATCH --partition=uoa-compute
 #SBATCH -N 1
@@ -55,7 +54,6 @@ cat > "$WORKER_DIAMOND" <<'EOF'
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
 
-set -euo pipefail
 
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
@@ -100,7 +98,7 @@ head "$DIAMOND_TOP" || true
 EOF
 
 cat > "$WORKER_EXTRACT" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --mem=32G
 #SBATCH --partition=uoa-compute
 #SBATCH -N 1
@@ -110,8 +108,6 @@ cat > "$WORKER_EXTRACT" <<'EOF'
 #SBATCH --time=02:00:00
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
-
-set -euo pipefail
 
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
@@ -160,7 +156,7 @@ head "$NOHIT_LIST" || true
 EOF
 
 cat > "$WORKER_BLASTP" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --mem=128G
 #SBATCH --partition=uoa-compute
 #SBATCH -N 1
@@ -170,8 +166,6 @@ cat > "$WORKER_BLASTP" <<'EOF'
 #SBATCH --time=1-00:00:00
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
-
-set -euo pipefail
 
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
