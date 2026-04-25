@@ -104,6 +104,7 @@ rsconnect/
 *.pot
 *.ptf
 *.pto
+*gff3*
 
 # HMMER / annotation database files
 *.h3f
