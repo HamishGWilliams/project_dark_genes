@@ -1,0 +1,17 @@
+#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+evm.utg415.101       -            343 572074at33208        -            191   1.6e-48  166.5  25.9   1   4   4.9e-27   2.8e-22   80.9  13.1     1    74    31   117    31   126 0.82 -
+evm.utg415.101       -            343 572074at33208        -            191   1.6e-48  166.5  25.9   2   4   1.9e-09   0.00011   23.5   0.0    57   101   127   171   118   182 0.90 -
+evm.utg415.101       -            343 572074at33208        -            191   1.6e-48  166.5  25.9   3   4   3.1e-08    0.0017   19.6   0.3    98   131   196   231   188   260 0.76 -
+evm.utg415.101       -            343 572074at33208        -            191   1.6e-48  166.5  25.9   4   4   2.3e-17   1.3e-12   49.4   0.4   135   191   274   341   267   341 0.80 -
+#
+# Program:         hmmsearch
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/572074at33208.hmm
+# Target file:     /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+# Option settings: hmmsearch --domtblout /uoa/scratch/users/r02hw22/project_dark_genes/equina_busco_proteins/run_metazoa_odb10/hmmer_output/initial_run_results/572074at33208.out --cpu 1 /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/572074at33208.hmm /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa 
+# Current dir:     /uoa/scratch/users/r02hw22/project_dark_genes
+# Date:            Sat Apr 25 14:42:33 2026
+# [ok]

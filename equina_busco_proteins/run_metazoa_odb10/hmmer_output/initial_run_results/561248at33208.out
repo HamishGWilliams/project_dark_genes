@@ -1,0 +1,27 @@
+#                                                                                          --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name                      accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#              ------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+evm.utg4907.71                     -            442 561248at33208        -            174   3.2e-48  165.2  18.7   1   4      0.75   8.3e+03   -2.2   0.1   102   127    63    88    42   110 0.62 -
+evm.utg4907.71                     -            442 561248at33208        -            174   3.2e-48  165.2  18.7   2   4   2.4e-20   2.7e-16   61.3   0.5     2    55   156   222   155   229 0.88 -
+evm.utg4907.71                     -            442 561248at33208        -            174   3.2e-48  165.2  18.7   3   4   4.1e-06     0.045   15.0   0.0    54    72   266   284   252   297 0.83 -
+evm.utg4907.71                     -            442 561248at33208        -            174   3.2e-48  165.2  18.7   4   4     5e-30   5.6e-26   92.8   7.3    70   174   321   439   302   439 0.86 -
+evm.utg950.1                       -            443 561248at33208        -            174   6.2e-48  164.3  19.5   1   4      0.86   9.6e+03   -2.4   0.2   102   127    63    88    44   107 0.60 -
+evm.utg950.1                       -            443 561248at33208        -            174   6.2e-48  164.3  19.5   2   4   2.3e-20   2.6e-16   61.4   0.5     2    55   157   223   156   230 0.88 -
+evm.utg950.1                       -            443 561248at33208        -            174   6.2e-48  164.3  19.5   3   4   4.8e-06     0.053   14.8   0.0    54    72   267   285   253   293 0.84 -
+evm.utg950.1                       -            443 561248at33208        -            174   6.2e-48  164.3  19.5   4   4   4.1e-30   4.6e-26   93.1   7.1    70   174   322   440   297   440 0.86 -
+evm.utg1936.11                     -            224 561248at33208        -            174    0.0068   17.7   2.8   1   2    0.0075        84    4.3   0.1   102   141    62   101    41   108 0.78 -
+evm.utg1936.11                     -            224 561248at33208        -            174    0.0068   17.7   2.8   2   2   1.2e-05      0.13   13.5   0.3   101   153   158   210   130   220 0.82 -
+utg1579.equina_smart_1435535.mrna1 -            248 561248at33208        -            174      0.17   13.1   5.9   1   2      0.01   1.1e+02    3.9   0.5    93   140    58   104    37   124 0.77 -
+utg1579.equina_smart_1435535.mrna1 -            248 561248at33208        -            174      0.17   13.1   5.9   2   2   3.6e-05      0.41   11.9   0.6   106   157   183   234   149   245 0.77 -
+evm.utg17667.5                     -            338 561248at33208        -            174      0.67   11.2   6.7   1   2    0.0029        33    5.7   0.1   102   142    62   102    41   119 0.81 -
+evm.utg17667.5                     -            338 561248at33208        -            174      0.67   11.2   6.7   2   2   0.00043       4.8    8.4   0.8    98   165   152   222   125   234 0.78 -
+#
+# Program:         hmmsearch
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/561248at33208.hmm
+# Target file:     /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+# Option settings: hmmsearch --domtblout /uoa/scratch/users/r02hw22/project_dark_genes/equina_busco_proteins/run_metazoa_odb10/hmmer_output/initial_run_results/561248at33208.out --cpu 1 /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/561248at33208.hmm /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa 
+# Current dir:     /uoa/scratch/users/r02hw22/project_dark_genes
+# Date:            Sat Apr 25 14:42:34 2026
+# [ok]

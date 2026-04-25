@@ -1,0 +1,32 @@
+#                                                                                 --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name             accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#     ------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   1   6     1e-73   1.9e-69  236.2   3.1     2   208     8   247     7   258 0.84 -
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   2   6    5e-157  9.2e-153  511.9  11.6   208   513   365   680   355   721 0.94 -
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   3   6   3.1e-22   5.8e-18   65.8   0.6   532   643   770   905   752   914 0.80 -
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   4   6   1.3e-20   2.4e-16   60.4   0.0   642   729   927  1024   923  1038 0.86 -
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   5   6   2.6e-12   4.9e-08   32.9   0.1   724   854  1060  1215  1051  1306 0.70 -
+evm.utg1005.32.1.5c22e7a7 -           1373 76852at33208         -            955    1e-269  899.0  40.1   6   6   0.00033       6.1    6.1   0.2   878   912  1329  1363  1317  1369 0.82 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   1   7   1.2e-73   2.2e-69  236.0   3.1     2   208     8   247     7   258 0.84 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   2   7  6.7e-157  1.2e-152  511.5  11.7   208   513   365   680   357   718 0.94 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   3   7   3.4e-22   6.4e-18   65.7   0.6   532   643   770   905   752   918 0.80 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   4   7   1.4e-20   2.7e-16   60.3   0.0   642   729   927  1024   923  1038 0.86 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   5   7     3e-12   5.6e-08   32.8   0.1   724   854  1060  1215  1051  1306 0.70 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   6   7   0.00032       5.9    6.2   0.1   878   912  1329  1363  1317  1373 0.82 -
+evm.utg1005.32            -           1499 76852at33208         -            955  2.2e-269  897.9  41.5   7   7     0.053   9.9e+02   -1.2   0.0   929   954  1422  1447  1399  1448 0.72 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   1   6     6e-74   1.1e-69  237.0   3.3     2   208     8   247     7   258 0.84 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   2   6  4.7e-156  8.6e-152  508.7  12.6   209   513   366   680   361   731 0.91 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   3   6   7.1e-22   1.3e-17   64.6   0.2   534   643   772   905   753   916 0.81 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   4   6   2.2e-20   4.1e-16   59.7   0.0   642   729   927  1024   923  1038 0.86 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   5   6   5.9e-12   1.1e-07   31.8   0.1   723   847  1059  1208  1043  1303 0.73 -
+evm.utg78.12              -           1417 76852at33208         -            955  1.1e-268  895.6  39.4   6   6   0.00027         5    6.4   0.2   877   912  1328  1363  1316  1373 0.81 -
+#
+# Program:         hmmsearch
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/76852at33208.hmm
+# Target file:     /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+# Option settings: hmmsearch --domtblout /uoa/scratch/users/r02hw22/project_dark_genes/equina_busco_proteins/run_metazoa_odb10/hmmer_output/initial_run_results/76852at33208.out --cpu 1 /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/76852at33208.hmm /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa 
+# Current dir:     /uoa/scratch/users/r02hw22/project_dark_genes
+# Date:            Sat Apr 25 14:43:15 2026
+# [ok]

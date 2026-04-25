@@ -1,0 +1,20 @@
+#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+evm.utg309.37        -           1012 186208at33208        -            725         0 1218.8  12.3   1   3         0         0 1066.6   5.6     3   571     9   649     7   667 0.93 -
+evm.utg309.37        -           1012 186208at33208        -            725         0 1218.8  12.3   2   3   1.4e-33   1.9e-29  103.9   0.0   572   642   676   747   667   806 0.89 -
+evm.utg309.37        -           1012 186208at33208        -            725         0 1218.8  12.3   3   3   6.3e-14   8.8e-10   38.9   0.2   658   725   810   895   787   895 0.77 -
+evm.utg25321.20      -            685 186208at33208        -            725  7.3e-296  984.6   7.2   1   2  4.2e-118  5.9e-114  383.3   1.1     3   203     9   216     7   226 0.96 -
+evm.utg25321.20      -            685 186208at33208        -            725  7.3e-296  984.6   7.2   2   2  2.1e-183    3e-179  599.1   0.6   195   534   230   619   222   635 0.91 -
+evm.utg25321.19      -            128 186208at33208        -            725   6.8e-18   65.7   0.1   1   1   1.5e-21   2.1e-17   64.1   0.1   556   641     1   103     1   110 0.71 -
+evm.utg25321.17      -            207 186208at33208        -            725   3.7e-11   43.4   0.2   1   1   5.7e-15   7.9e-11   42.3   0.2   659   725    21   105     7   105 0.78 -
+#
+# Program:         hmmsearch
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/186208at33208.hmm
+# Target file:     /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+# Option settings: hmmsearch --domtblout /uoa/scratch/users/r02hw22/project_dark_genes/equina_busco_proteins/run_metazoa_odb10/hmmer_output/initial_run_results/186208at33208.out --cpu 1 /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/186208at33208.hmm /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa 
+# Current dir:     /uoa/scratch/users/r02hw22/project_dark_genes
+# Date:            Sat Apr 25 14:41:03 2026
+# [ok]

@@ -1,0 +1,22 @@
+#                                                                                 --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name             accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#     ------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+evm.utg432.109            -            344 359369at33208        -            267  9.5e-111  370.8   1.8   1   1  2.8e-114  2.3e-110  369.6   1.8     7   267    34   338    30   338 0.88 -
+evm.utg432.109.1.5c22f0ed -            327 359369at33208        -            267   2.4e-94  317.0   2.5   1   1   7.3e-98   5.8e-94  315.7   2.5     7   239    34   310    30   323 0.86 -
+evm.utg57.7               -            185 359369at33208        -            267   5.6e-52  178.1   0.5   1   1   9.1e-56   7.2e-52  177.7   0.5     7   135    34   182    30   184 0.86 -
+evm.utg57.4               -            136 359369at33208        -            267   1.1e-42  147.6   0.3   1   1   4.7e-46   3.8e-42  145.9   0.3   159   267     3   130     1   130 0.88 -
+evm.utg159619.2           -            136 359369at33208        -            267   1.1e-41  144.3   0.3   1   1   4.8e-45   3.8e-41  142.6   0.3   159   267     3   130     1   130 0.88 -
+evm.utg372.24             -            275 359369at33208        -            267   1.1e-34  121.3   0.0   1   2   4.8e-34   3.8e-30  106.5   0.0    27   183    24   189    12   196 0.78 -
+evm.utg372.24             -            275 359369at33208        -            267   1.1e-34  121.3   0.0   2   2   1.9e-05      0.15   12.8   0.0   229   261   226   258   220   263 0.89 -
+evm.utg7008.18            -            275 359369at33208        -            267   1.4e-34  121.0   0.0   1   2   7.1e-34   5.6e-30  105.9   0.0    27   183    24   189    12   196 0.78 -
+evm.utg7008.18            -            275 359369at33208        -            267   1.4e-34  121.0   0.0   2   2   1.6e-05      0.13   13.0   0.0   229   261   226   258   220   263 0.89 -
+#
+# Program:         hmmsearch
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/359369at33208.hmm
+# Target file:     /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+# Option settings: hmmsearch --domtblout /uoa/scratch/users/r02hw22/project_dark_genes/equina_busco_proteins/run_metazoa_odb10/hmmer_output/initial_run_results/359369at33208.out --cpu 1 /uoa/scratch/users/r02hw22/project_dark_genes/busco_downloads/lineages/metazoa_odb10/hmms/359369at33208.hmm /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa 
+# Current dir:     /uoa/scratch/users/r02hw22/project_dark_genes
+# Date:            Sat Apr 25 14:40:39 2026
+# [ok]
