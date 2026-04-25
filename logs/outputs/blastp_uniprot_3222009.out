@@ -1,0 +1,18 @@
+========================================
+Running BLASTp for: Swiss-Prot
+Reference FASTA: 02_annotation/reference_dbs/swissprot_all.fasta
+BLAST DB:        02_annotation/db/swissprot_all_blast
+Output TSV:      02_annotation/blastp/equina_vs_swissprot_all.blastp.tsv
+Threads:         8
+========================================
+
+
+Building a new DB, current time: 04/25/2026 22:05:15
+New DB name:   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/db/swissprot_all_blast
+New DB title:  02_annotation/reference_dbs/swissprot_all.fasta
+Sequence type: Protein
+Keep MBits: T
+Maximum file size: 3000000000B
+Adding sequences from FASTA; added 574627 sequences in 20.3844 seconds.
+
+

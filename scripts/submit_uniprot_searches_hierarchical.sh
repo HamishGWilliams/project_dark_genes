@@ -23,20 +23,21 @@ RUN_DIAMOND="true"
 RUN_BLASTP_NOHIT="true"
 BLASTP_FALLBACK_DBS=(
   "trembl_cnidaria_selected"
-  "metazoa_selected"
 )
+	# Add   "metazoa_selected" back when proteomes are done downloading
 
 DB_NAMES=(
   "swissprot_all"
   "trembl_cnidaria_selected"
-  "metazoa_selected"
 )
+	# Add   "metazoa_selected" back when proteomes are done downloading
+
 
 DB_FASTAS=(
   "02_annotation/reference_dbs/swissprot_all.fasta"
   "02_annotation/reference_dbs/trembl_cnidaria_selected.fasta"
-  "02_annotation/reference_dbs/metazoa_selected.fasta"
 )
+	# add   "02_annotation/reference_dbs/metazoa_selected.fasta" back after download
 
 WORKER_DIAMOND="scripts/run_uniprot_diamond_single_db.sh"
 WORKER_BLASTP="scripts/run_uniprot_blastp_single_db.sh"

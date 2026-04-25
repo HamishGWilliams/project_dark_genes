@@ -24,7 +24,7 @@ mkdir -p logs/errors
 
 QUERY="00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa"
 
-SWISSPROT_FASTA="02_annotation/reference_dbs/fasta/swissprot_all.fasta"
+SWISSPROT_FASTA="02_annotation/reference_dbs/swissprot_all.fasta"
 TREMBL_FASTA="02_annotation/reference_dbs/trembl_cnidaria_selected.fasta"
 
 run_diamond_search () {

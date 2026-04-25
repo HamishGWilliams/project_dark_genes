@@ -101,11 +101,15 @@ Interpretation:
 
 ### 1. Archive BUSCO outputs for interpretation
 - [x] Record lineage dataset used
-- [ ] Save `short_summary` output into the project repository as a lightweight text summary
-- [ ] Save or inspect `full_table.tsv` for duplicated/fragmented BUSCO patterns
+- [x] Save `short_summary` output into the project repository as a lightweight text summary
+- [x] Save or inspect `full_table.tsv` for duplicated/fragmented BUSCO patterns
 
 ### 2. Start functional annotation
-- [ ] Run DIAMOND or BLASTp against UniProt / reference proteomes
+- [x] Run DIAMOND against SWISSPROT and cnidaria-TrEMBL proteomes
+- [ ] Run BLASTp against SWISSPROT and cnidaria-TrEMBL proteomes
+- [ ] Finish downloading all metazoa proteomes
+- [ ] Run DIAMOND against wider metazoa proteomes for fallback
+- [ ] Run BLASTp against wider metazoa proteomes for fallback
 - [ ] Run InterProScan
 - [ ] Run eggNOG-mapper
 - [ ] Run SignalP for unresolved candidates

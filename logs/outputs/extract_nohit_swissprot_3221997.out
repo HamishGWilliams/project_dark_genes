@@ -1,0 +1,15 @@
+Swiss-Prot DIAMOND hits: 27332
+No-hit FASTA written to: 02_annotation/intermediate/equina_no_swissprot_diamond_hit.fa
+No-hit ID list written to: 02_annotation/intermediate/equina_no_swissprot_diamond_hit.ids.txt
+28275 02_annotation/intermediate/equina_no_swissprot_diamond_hit.ids.txt
+28275
+evm.utg4.1
+evm.utg4.5
+evm.utg4.6
+evm.utg4.10
+evm.utg4.13
+evm.utg4.14
+evm.utg4.17
+utg4.equina_smart_817336.mrna2
+evm.utg4.22
+evm.utg4.24
