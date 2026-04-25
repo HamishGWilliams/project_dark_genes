@@ -18,3 +18,11 @@ busco -i 00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa \
       -l metazoa_odb10 \
       -o equina_busco_proteins \
       -c 32
+
+mkdir -p 04_reports/busco
+
+find equina_busco_proteins -maxdepth 2 -type f | sort
+
+cp equina_busco_proteins/short_summary*.txt 04_reports/busco/ 2>/dev/null || true
+cp equina_busco_proteins/short_summary*.json 04_reports/busco/ 2>/dev/null || true
+cp equina_busco_proteins/run_metazoa_odb10/full_table.tsv 04_reports/busco/ 2>/dev/null || true
