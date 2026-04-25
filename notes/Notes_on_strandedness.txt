@@ -1,0 +1,26 @@
+# Features of stranded vs. unstranded featurecounts:
+
+Assigned counts: stranded ˜ 29.1M vs unstranded ˜ 58.1M on average — a ~2× difference.
+
+Per-sample stranded/unstranded ratio = 0.501 on average (range 0.496–0.503), i.e., almost exactly half for every sample.
+
+Assigned fraction of reads: stranded 29.0% vs unstranded 57.98% on average.
+
+Unassigned_NoFeatures fraction: stranded 47.4% vs unstranded 17.6% (biggest shift).
+
+Unassigned_Unmapped fraction: identical between runs (so alignment quality isn’t the cause).
+
+Unassigned_Ambiguity: slightly higher in unstranded (1.24% vs 0.42%), which is expected when you don’t restrict by strand.
+
+# Interpretation:
+
+With an unstranded library, reads land on both genomic strands. Forcing strand specificity (“stranded” run) wrongly discards ~half the true hits, inflating Unassigned_NoFeatures and cutting Assigned roughly in half across all samples — exactly what your summaries show.
+
+# What to use:
+
+Use featureCounts -s 0 (unstranded) for your final counting, keeping all other options the same (and -p if paired-end).
+
+# Conclusions
+The RNA-seq data for this experiment are:
+- unstranded
+- paired-end
