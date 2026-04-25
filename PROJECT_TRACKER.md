@@ -9,6 +9,7 @@
 - `equina_smart.rnam-trna.merged.ggf.curated.remredun.proteins.gff3.gz`
 - `equina_smartden.arrow4.noredun.fa.gz`
 - RNA-seq data from a multi-stressor experiment including control treatments
+- Experimental design notes file in the repository `notes/` directory describing treatment conditions and total sample size
 
 ### What these files appear to be
 The current input files now form a coherent annotation set plus genome assembly:
@@ -28,6 +29,9 @@ Evidence collected so far:
 - Mean protein length: **452.05 aa**
 - Minimum protein length: **32 aa**
 - Maximum protein length: **10,458 aa**
+- RNA-seq libraries are **paired-end**
+- RNA-seq libraries are **unstranded**
+- Experimental design information is available in a text file under `notes/`
 
 Interpretation:
 - The project can now proceed as a **genome-aware and expression-aware dark-gene workflow** rather than a proteome-only survey
@@ -52,6 +56,8 @@ Interpretation:
 - [x] Located GFF3 annotation file
 - [x] Located transcript FASTA
 - [x] Established that RNA-seq data are available for downstream validation and prioritisation
+- [x] Confirmed RNA-seq library layout is paired-end and unstranded
+- [x] Located an experiment notes file describing treatment conditions and sample size
 
 ---
 
@@ -112,9 +118,8 @@ Interpretation:
 - [ ] Use genome context later to help distinguish plausible genes from suspicious models
 
 ### 4. Integrate RNA-seq evidence
-- [ ] Organise RNA-seq metadata table with sample IDs, treatment, control/stressor labels, replicate IDs, and file paths
-- [ ] Run raw read QC and adapter/quality trimming if needed
-- [ ] Align reads to the genome or transcriptome
+- [ ] Convert the `notes/` experiment file into a tabular RNA-seq sample sheet with sample IDs, treatment/control labels, replicate IDs, and file paths
+- [ ] Align paired-end unstranded reads to the genome or transcriptome
 - [ ] Quantify expression at transcript/gene level
 - [ ] Identify which candidate dark genes are detectably expressed in any condition
 - [ ] Test for differential expression between controls and stressor treatments
