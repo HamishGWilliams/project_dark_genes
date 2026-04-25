@@ -47,3 +47,80 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+## Additional ignores for bioinformatic work
+# FASTA / sequence files
+*.fa
+*.fasta
+*.fna
+*.ffn
+*.faa
+*.frn
+*.fas
+*.fsa
+
+# FASTQ / read files
+*.fastq
+*.fq
+*.fastq.gz
+*.fq.gz
+
+# Graph / assembly files
+*.gfa
+
+# Compressed / archive files
+*.gz
+*.bz2
+*.xz
+*.zip
+*.7z
+*.tar
+*.tgz
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+
+# Alignment / mapping files
+*.sam
+*.bam
+*.cram
+*.bai
+*.crai
+
+# BLAST / DIAMOND / sequence database files
+*.db
+*.dmnd
+*.phr
+*.pin
+*.psq
+*.pal
+*.nhr
+*.nin
+*.nsq
+*.ndb
+*.nog
+*.nsd
+*.nsi
+*.pot
+*.ptf
+*.pto
+
+# HMMER / annotation database files
+*.h3f
+*.h3i
+*.h3m
+*.h3p
+
+# Common large results / scratch directories
+scratch/
+tmp/
+work/
+results/raw/
+results/intermediate/
+busco_downloads/
+
+# Logs / temp files
+*.log
+*.tmp
+*.temp
+*.swp
