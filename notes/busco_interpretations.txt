@@ -1,0 +1,28 @@
+What the BUSCO result means
+
+Your BUSCO run is:
+
+BUSCO v5.3.2
+mode: proteins
+lineage: metazoa_odb10
+C:95.6% [S:52.9%, D:42.7%], F:2.6%, M:1.8%, n:954
+
+Interpretation:
+
+95.6% complete is very good. Your proteome is broadly complete.
+2.6% fragmented and 1.8% missing are low enough that the dataset is usable.
+The main caution is 42.7% duplicated BUSCOs, which is high.
+
+That high duplication does not stop the project, but it means we should be careful. It can reflect one or more of:
+
+retained redundant models
+isoforms/transcript redundancy not fully collapsed
+haplotig/assembly redundancy
+overprediction in the annotation set
+
+So from here onward, any dark-gene calls need to be made conservatively, especially for:
+
+short proteins
+singletons
+proteins on suspiciously repetitive or duplicated regions
+proteins with weak structural support
