@@ -105,6 +105,7 @@ This means downstream dark-gene classification should be **conservative**, parti
 - flagged short proteins for later review
 - completed a BUSCO checkpoint on the protein set
 - identified RNA-seq resources for downstream validation and prioritisation
+- defined a **hierarchical UniProt strategy**: Swiss-Prot first, curated TrEMBL second
 
 ---
 
@@ -115,7 +116,8 @@ This means downstream dark-gene classification should be **conservative**, parti
 - inspect/copy `full_table.tsv`
 
 ### 2. Start functional annotation
-- run **DIAMOND or BLASTp** against UniProt / reference proteomes
+- run **DIAMOND or BLASTp** against **UniProtKB/Swiss-Prot** first
+- run a second-pass **DIAMOND or BLASTp** against a **curated TrEMBL set**, preferably drawn from **UniProt Reference Proteomes** and filtered to biologically relevant taxa
 - run **InterProScan**
 - run **eggNOG-mapper**
 - run **SignalP** later for unresolved candidates
@@ -136,7 +138,8 @@ This means downstream dark-gene classification should be **conservative**, parti
 For each gene/protein, integrate:
 
 - length/QC information
-- similarity search results
+- Swiss-Prot similarity results
+- curated TrEMBL similarity results
 - InterPro domain results
 - eggNOG annotation
 - genomic context
@@ -182,13 +185,22 @@ flowchart TD
     I --> J{Proteome suitable for annotation?}
     J -->|Yes, but caution due duplication| K[Proceed with conservative annotation workflow]
 
-    %% Functional annotation
-    K --> L[DIAMOND / BLASTp vs UniProt]
+    %% Hierarchical functional annotation
+    K --> L1[DIAMOND / BLASTp vs UniProtKB/Swiss-Prot]
+    L1 --> L2{Swiss-Prot hit found?}
+    L2 -->|Yes| L3[Assign highest-confidence sequence annotation]
+    L2 -->|No| L4[Search curated UniProtKB/TrEMBL<br/>Reference Proteomes / relevant taxa]
+    L4 --> L5{Curated TrEMBL hit found?}
+    L5 -->|Yes| L6[Record homology support<br/>use conservative functional wording]
+    L5 -->|No| L7[Retain as unresolved for deeper screening]
+
     K --> M[InterProScan]
     K --> N[eggNOG-mapper]
     K --> O[SignalP for unresolved proteins]
 
-    L --> P[Master annotation table]
+    L3 --> P[Master annotation table]
+    L6 --> P
+    L7 --> P
     M --> P
     N --> P
     O --> P
@@ -210,14 +222,115 @@ flowchart TD
 
     %% Candidate classification
     P --> W{Classification}
-    W -->|Sequence hit and/or domain/function| X[Annotated / rescued proteins]
-    W -->|No sequence hit only| Y[Sequence-dark candidates]
-    W -->|No sequence hit + no domain + no function| Z[Function-dark candidates]
+    W -->|Swiss-Prot and/or strong corroborated annotation| X[Annotated / rescued proteins]
+    W -->|TrEMBL-only homology support| Y[Sequence-supported but lower-confidence proteins]
+    W -->|No sequence hit, but domain/orthology support| Z1[Not fully dark]
+    W -->|No sequence hit + no domain + no function| Z2[Function-dark candidates]
 
     %% Prioritisation
-    Z --> AA[Filter using genome context]
+    Z2 --> AA[Filter using genome context]
     AA --> AB[Filter using expression support]
     AB --> AC[Prioritise high-confidence dark genes]
     AC --> AD[Later comparative analysis<br/>OrthoFinder / lineage restriction]
     AD --> AE[Final shortlist]
 ```
+
+---
+
+## Dark-gene classification strategy
+
+The working classification logic is:
+
+### Annotated
+Any gene/protein with convincing support from:
+- reviewed Swiss-Prot similarity
+- conserved domain/family annotation
+- orthology-based functional annotation
+- corroborated sequence evidence across multiple sources
+
+### Sequence-supported but lower-confidence
+A protein with:
+- no Swiss-Prot hit
+- but a plausible hit to a **curated TrEMBL** entry
+
+These should be described conservatively and not treated as equivalent to reviewed Swiss-Prot functional assignments.
+
+### Not fully dark
+A protein with:
+- no convincing sequence hit
+- but some additional support such as InterPro domains or eggNOG orthology
+
+### Function-dark
+No convincing:
+- Swiss-Prot hit
+- curated TrEMBL hit
+- conserved domain hit
+- orthology-based annotation
+
+### High-confidence dark candidate
+A function-dark candidate that also has:
+- structurally plausible annotation
+- acceptable QC status
+- supportive genomic context
+- ideally expression support from RNA-seq
+
+---
+
+## Role of RNA-seq in this project
+
+RNA-seq is used as a **validation and prioritisation layer**, not as a replacement for annotation.
+
+It will help determine whether candidate dark genes are:
+
+- actually expressed
+- reproducibly detected
+- structurally supported by splice-aware mapping
+- constitutively expressed or condition-specific
+- responsive to stress treatments
+
+Dark genes with reproducible expression and/or treatment responsiveness are stronger candidates than unannotated proteins with no expression support.
+
+---
+
+## Suggested project structure
+
+```text
+project_dark_genes/
+├── 00_raw/
+├── 01_qc/
+├── 02_annotation/
+├── 03_dark_candidates/
+├── 04_reports/
+├── 05_rnaseq/
+│   ├── 00_metadata/
+│   ├── 01_qc/
+│   ├── 02_trimmed/
+│   ├── 03_alignment/
+│   ├── 04_quant/
+│   └── 05_de/
+├── logs/
+└── scripts/
+```
+
+---
+
+## Tracker
+
+A task-by-task record of progress is maintained in:
+
+- [PROJECT_TRACKER.md](PROJECT_TRACKER.md)
+
+---
+
+## Notes
+
+This repository is intended to track:
+
+- workflow development
+- project documentation
+- lightweight summary outputs
+- scripts
+- annotation logic
+- interpretation notes
+
+Large raw bioinformatics files are intentionally excluded from version control via `.gitignore`.
