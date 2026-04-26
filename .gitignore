@@ -129,3 +129,10 @@ busco_downloads/
 *.temp
 *.swp
 02_annotation/blastp/*.blastp.tsv
+
+# InterProScan raw outputs and temporary files
+02_annotation/interproscan/raw/
+02_annotation/interproscan/tmp/
+02_annotation/interproscan/test_input/
+*.xml
+*.json
