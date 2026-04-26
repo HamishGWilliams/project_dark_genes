@@ -120,6 +120,7 @@ results/raw/
 results/intermediate/
 busco_downloads/
 02_annotation/blastp/
+02_annotation/blastp/equina_vs_swissprot_all.blastp.tsv
 02_annotation/db/
 
 # Logs / temp files
