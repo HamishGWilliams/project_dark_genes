@@ -1,0 +1,11 @@
+evm.utg4.15
+evm.utg4.15.1.5c22f047
+evm.utg4.18
+evm.utg4.18.1.5c22f04a
+evm.utg4.34
+evm.utg4.34.1.5c22f04a
+evm.utg4.34.1.5c22f04a.1.5c27949c
+evm.utg4.53
+evm.utg4.53.1.5c22f048
+evm.utg4.53.1.5c22f048.1.5c27949a
+utg4.equina_smart_817336.mrna2

@@ -1,0 +1,48 @@
+========================================
+Project dir : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+InterProScan: /uoa/scratch/users/r02hw22/software/interproscan/interproscan-5.77-108.0/interproscan.sh
+Query FASTA : 02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa
+Run name    : equina_test100_clean
+Threads     : 16
+JAVA_HOME   : /opt/software/uoa/spack/linux-rhel8-x86_64/gcc-12.3.0/openjdk-11.0.20.1_1-yc3btgqcrd3r6ldr7kp4bs6jlrc36sjg
+Temp dir    : /uoa/scratch/users/r02hw22/project_dark_genes/interproscan_tmp_3222034
+Output base : 02_annotation/interproscan/raw/equina_test100_clean.interproscan
+========================================
+Python 3.9.12
+26/04/2026 10:52:29:435 Welcome to InterProScan-5.77-108.0
+26/04/2026 10:52:29:438 Running InterProScan v5 in STANDALONE mode... on Linux
+26/04/2026 10:52:37:468 RunID: hmem001.int.maxwell.abdn.ac.uk_20260426_105236906_fwiu
+26/04/2026 10:52:55:162 Loading file /uoa/home/r02hw22/sharedscratch/project_dark_genes/02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa
+26/04/2026 10:52:55:166 Running the following analyses:
+[AntiFam-8.0,CDD-3.21,Coils-2.2.1,FunFam-4.3.0,Gene3D-4.3.0,Hamap-2025_01,MobiDBLite-4.0,NCBIfam-18.0,PANTHER-19.0,Pfam-38.1,PIRSF-3.10,PIRSR-2025_05,PRINTS-42.0,ProSitePatterns-2025_01,ProSiteProfiles-2025_01,SFLD-4,SMART-9.0,SUPERFAMILY-1.75]
+Pre-calculated match lookup service DISABLED.  Please wait for match calculations to complete...
+26/04/2026 10:53:19:903 25% completed
+26/04/2026 10:54:10:452 51% completed
+26/04/2026 10:56:45:760 76% completed
+26/04/2026 10:58:25:970 90% completed
+26/04/2026 11:00:19:147 100% done:  InterProScan analyses completed 
+
+InterProScan finished.
+Summarising TSV: 02_annotation/interproscan/raw/equina_test100_clean.interproscan.tsv
+Raw TSV rows:
+1012 02_annotation/interproscan/raw/equina_test100_clean.interproscan.tsv
+Proteins with at least one InterProScan match:
+88 02_annotation/interproscan/summary/equina_test100_clean.interproscan_matched_protein_ids.txt
+Top member databases:
+    242 MobiDBLite
+    136 Pfam
+    119 SUPERFAMILY
+    117 Gene3D
+     66 PANTHER
+     63 PRINTS
+     62 ProSiteProfiles
+     60 SMART
+     33 FunFam
+     33 CDD
+Summary files:
+-rw-r--r-- 1 r02hw22 UG Science 7.4K Apr 26 11:00 02_annotation/interproscan/summary/equina_test100_clean.go_terms.tsv
+-rw-r--r-- 1 r02hw22 UG Science  64K Apr 26 11:00 02_annotation/interproscan/summary/equina_test100_clean.interpro_domain_summary.tsv
+-rw-r--r-- 1 r02hw22 UG Science 1.2K Apr 26 11:00 02_annotation/interproscan/summary/equina_test100_clean.interproscan_matched_protein_ids.txt
+-rw-r--r-- 1 r02hw22 UG Science  245 Apr 26 11:00 02_annotation/interproscan/summary/equina_test100_clean.member_database_counts.txt
+-rw-r--r-- 1 r02hw22 UG Science 1.9M Apr 26 11:00 02_annotation/interproscan/summary/equina_test100_clean.pathways.tsv
+Done.

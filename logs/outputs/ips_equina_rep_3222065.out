@@ -1,0 +1,19 @@
+========================================
+Project dir : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+InterProScan: /uoa/scratch/users/r02hw22/software/interproscan/interproscan-5.77-108.0/interproscan.sh
+Query FASTA : 02_annotation/interproscan/input/equina_representative_longest_per_gene.no_stop.fa
+Run name    : equina_representative_longest_per_gene
+Threads     : 16
+JAVA_HOME   : /opt/software/uoa/spack/linux-rhel8-x86_64/gcc-12.3.0/openjdk-11.0.20.1_1-yc3btgqcrd3r6ldr7kp4bs6jlrc36sjg
+Temp dir    : /uoa/scratch/users/r02hw22/project_dark_genes/interproscan_tmp_3222065
+Output base : 02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan
+========================================
+Python 3.9.12
+26/04/2026 11:43:50:591 Welcome to InterProScan-5.77-108.0
+26/04/2026 11:43:50:593 Running InterProScan v5 in STANDALONE mode... on Linux
+26/04/2026 11:43:59:137 RunID: hmem001.int.maxwell.abdn.ac.uk_20260426_114358503_ggfb
+26/04/2026 11:44:15:537 Loading file /uoa/home/r02hw22/sharedscratch/project_dark_genes/02_annotation/interproscan/input/equina_representative_longest_per_gene.no_stop.fa
+26/04/2026 11:44:15:540 Running the following analyses:
+[AntiFam-8.0,CDD-3.21,Coils-2.2.1,FunFam-4.3.0,Gene3D-4.3.0,Hamap-2025_01,MobiDBLite-4.0,NCBIfam-18.0,PANTHER-19.0,Pfam-38.1,PIRSF-3.10,PIRSR-2025_05,PRINTS-42.0,ProSitePatterns-2025_01,ProSiteProfiles-2025_01,SFLD-4,SMART-9.0,SUPERFAMILY-1.75]
+Pre-calculated match lookup service DISABLED.  Please wait for match calculations to complete...
+26/04/2026 11:44:27:669 Uploaded 46971 unique sequences for analysis

@@ -1,0 +1,451 @@
+The naming pattern is suspicious enough that I would pause before the full InterProScan run and quantify transcript/gene redundancy first. I’ll anchor this to your repo’s current assumptions: one predicted proteome, matching CDS/transcript/GFF3 IDs, and a known concern about duplication/redundancy.
+
+evm.utg4.15
+evm.utg4.15.1.5c22f047
+
+evm.utg4.18
+evm.utg4.18.1.5c22f04a
+
+evm.utg4.34
+evm.utg4.34.1.5c22f04a
+evm.utg4.34.1.5c22f04a.1.5c27949c
+
+evm.utg4.53
+evm.utg4.53.1.5c22f048
+evm.utg4.53.1.5c22f048.1.5c27949a
+
+Those look like versioned or derivative transcript/protein models, not clean one-gene-one-protein IDs. The final entry:
+
+utg4.equina_smart_817336.mrna2
+
+is also explicitly mRNA-like and suggests that some loci may have numbered mRNA models.
+
+However, we should not collapse by name pattern alone. The correct test is to inspect the GFF3 gene ? mRNA/transcript ? CDS/protein relationships. The repo already states that the GFF3 mRNA IDs match the FASTA IDs, and the tracker notes that isoform retention/redundancy is a concern because BUSCO duplication is very high.
+
+# Next steps:
+
+Before the full InterProScan run, do an isoform audit and create a representative protein FASTA.
+
+keep two datasets:
+
+all proteins
+= transcript/protein-level annotation archive
+
+representative proteins
+= one protein per gene for dark-gene classification
+
+Do not call it a “consensus” sequence unless you are actually constructing a new consensus. Here, the correct term is usually:
+
+representative isoform
+primary transcript
+longest protein per gene
+
+For the first-pass dark-gene workflow, use longest protein per gene unless the annotation source already defines a canonical transcript.
+
+# 1. Parse the gff2 into a transcript-to-gene table
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+mkdir -p 01_qc/isoforms
+
+## create parser
+cat > scripts/parse_gff3_isoforms.py <<'PY'
+#!/usr/bin/env python3
+
+from pathlib import Path
+import gzip
+from collections import defaultdict
+
+gff = Path("00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.proteins.gff3.gz")
+out_lookup = Path("01_qc/isoforms/gff3_mrna_gene_lookup.tsv")
+out_counts = Path("01_qc/isoforms/gene_isoform_counts.tsv")
+
+def open_maybe_gz(path):
+    if str(path).endswith(".gz"):
+        return gzip.open(path, "rt")
+    return open(path)
+
+def parse_attrs(attr_string):
+    attrs = {}
+    for item in attr_string.strip().split(";"):
+        if not item:
+            continue
+        if "=" in item:
+            key, value = item.split("=", 1)
+            attrs[key] = value
+    return attrs
+
+rows = []
+gene_to_mrnas = defaultdict(list)
+
+with open_maybe_gz(gff) as fh:
+    for line in fh:
+        if not line.strip() or line.startswith("#"):
+            continue
+
+        fields = line.rstrip("\n").split("\t")
+        if len(fields) != 9:
+            continue
+
+        seqid, source, feature_type, start, end, score, strand, phase, attrs_raw = fields
+        attrs = parse_attrs(attrs_raw)
+
+        if feature_type.lower() in {"mrna", "transcript"}:
+            mrna_id = attrs.get("ID")
+            parent = attrs.get("Parent", "")
+
+            if not mrna_id:
+                continue
+
+            # If multiple parents exist, keep the full string but use first for grouping.
+            gene_id = parent.split(",")[0] if parent else mrna_id
+
+            rows.append((gene_id, mrna_id, seqid, start, end, strand, feature_type))
+            gene_to_mrnas[gene_id].append(mrna_id)
+
+with out_lookup.open("w") as out:
+    out.write("gene_id\tmrna_id\tseqid\tstart\tend\tstrand\tfeature_type\n")
+    for row in rows:
+        out.write("\t".join(row) + "\n")
+
+with out_counts.open("w") as out:
+    out.write("gene_id\tisoform_count\tmrna_ids\n")
+    for gene_id, mrnas in sorted(gene_to_mrnas.items()):
+        out.write(f"{gene_id}\t{len(mrnas)}\t{','.join(mrnas)}\n")
+
+print(f"Wrote: {out_lookup}")
+print(f"Wrote: {out_counts}")
+print(f"mRNA/transcript records: {len(rows)}")
+print(f"Genes/loci represented: {len(gene_to_mrnas)}")
+print(f"Genes/loci with >1 mRNA: {sum(1 for x in gene_to_mrnas.values() if len(x) > 1)}")
+PY
+
+chmod +x scripts/parse_gff3_isoforms.py
+
+## run it
+Wrote: 01_qc/isoforms/gff3_mrna_gene_lookup.tsv
+Wrote: 01_qc/isoforms/gene_isoform_counts.tsv
+mRNA/transcript records: 55607
+Genes/loci represented: 47671
+Genes/loci with >1 mRNA: 4585
+
+## inspect results
+head 01_qc/isoforms/gff3_mrna_gene_lookup.tsv
+
+gene_id mrna_id seqid   start   end     strand  feature_type
+evm.TU.utg4.1   evm.utg4.1      utg4    16926   17685   +       mRNA
+evm.TU.utg4.3   evm.utg4.3      utg4    25828   27424   +       mRNA
+evm.TU.utg4.4   evm.utg4.4      utg4    32709   33923   +       mRNA
+evm.TU.utg4.5   evm.utg4.5      utg4    39811   40338   -       mRNA
+evm.TU.utg4.6   evm.utg4.6      utg4    53325   58435   +       mRNA
+evm.TU.utg4.7   evm.utg4.7      utg4    59280   65408   +       mRNA
+evm.TU.utg4.8   evm.utg4.8      utg4    69262   70266   +       mRNA
+evm.TU.utg4.9   evm.utg4.9      utg4    75456   97355   -       mRNA
+evm.TU.utg4.10  evm.utg4.10     utg4    98913   99950   +       mRNA
+
+head 01_qc/isoforms/gene_isoform_counts.tsv
+
+gene_id isoform_count   mrna_ids
+evm.TU.utg10.1  1       evm.utg10.1
+evm.TU.utg10.10 1       evm.utg10.10
+evm.TU.utg10.11 1       evm.utg10.11
+evm.TU.utg10.12 1       evm.utg10.12
+evm.TU.utg10.13 1       evm.utg10.13
+evm.TU.utg10.14 1       evm.utg10.14
+evm.TU.utg10.15 1       evm.utg10.15
+evm.TU.utg10.16 1       evm.utg10.16
+evm.TU.utg10.17 1       evm.utg10.17
+
+awk -F'\t' 'NR > 1 && $2 > 1' 01_qc/isoforms/gene_isoform_counts.tsv | head
+
+evm.TU.utg10.22 2       evm.utg10.22,evm.utg10.22.1.5c278e75
+evm.TU.utg10.5  4       evm.utg10.5.1.5c22e795,evm.utg10.5,evm.utg10.5.2.5c22e796,evm.utg10.5.3.5c22e796
+evm.TU.utg1002.22       4       evm.utg1002.22,evm.utg1002.22.1.5c22e7a2,evm.utg1002.22.2.5c22e7a2,evm.utg1002.22.2.5c22e7a2.1.5c278e7b
+evm.TU.utg1002.23       2       evm.utg1002.23,evm.utg1002.23.1.5c22e7a0
+evm.TU.utg1002.26       2       evm.utg1002.26,evm.utg1002.26.1.5c22e7a0
+evm.TU.utg10026.1       8       evm.utg10026.1.3.5c22e79b,evm.utg10026.1.1.5c22e79b,evm.utg10026.1.4.5c22e79b,evm.utg10026.1.2.5c22e79b,evm.utg10026.1.5.5c22e79b,evm.utg10026.1.6.5c22e79b,evm.utg10026.1.7.5c22e79b,evm.utg10026.1
+evm.TU.utg10026.16      5       evm.utg10026.16.1.5c22e79c,evm.utg10026.16.2.5c22e79d.1.5c278e79,evm.utg10026.16,evm.utg10026.16.2.5c22e79d,evm.utg10026.16.1.5c22e79c.2.5c278e79
+evm.TU.utg10026.20      2       evm.utg10026.20,evm.utg10026.20.1.5c22e79e
+evm.TU.utg10041.12      2       evm.utg10041.12.1.5c278e7c,evm.utg10041.12
+evm.TU.utg1005.1        4       evm.utg1005.1,evm.utg1005.1.1.5c22e7ac.1.5c278e80,evm.utg1005.1.1.5c22e7ac,evm.utg1005.1.1.5c22e7ac.2.5c278e81
+
+awk -F'\t' 'NR > 1 && $2 > 1' 01_qc/isoforms/gene_isoform_counts.tsv | wc -l
+
+4585
+
+# 2 check if suspicious IDs share the same gene parent
+cat > 01_qc/isoforms/suspicious_test100_ids.txt <<'EOF'
+evm.utg4.15
+evm.utg4.15.1.5c22f047
+evm.utg4.18
+evm.utg4.18.1.5c22f04a
+evm.utg4.34
+evm.utg4.34.1.5c22f04a
+evm.utg4.34.1.5c22f04a.1.5c27949c
+evm.utg4.53
+evm.utg4.53.1.5c22f048
+evm.utg4.53.1.5c22f048.1.5c27949a
+utg4.equina_smart_817336.mrna2
+EOF
+
+awk 'NR==FNR {ids[$1]=1; next} FNR==1 || ($2 in ids)' \
+  01_qc/isoforms/suspicious_test100_ids.txt \
+  01_qc/isoforms/gff3_mrna_gene_lookup.tsv
+
+gene_id mrna_id seqid   start   end     strand  feature_type
+evm.TU.utg4.15  evm.utg4.15     utg4    138876  148175  -       mRNA
+evm.TU.utg4.15  evm.utg4.15.1.5c22f047  utg4    138876  146382  -       mRNA
+evm.TU.utg4.18  evm.utg4.18     utg4    175743  216599  +       mRNA
+evm.TU.utg4.18  evm.utg4.18.1.5c22f04a  utg4    175743  216673  +       mRNA
+utg4.equina_smart_817336.path2  utg4.equina_smart_817336.mrna2  utg4    235655  246127  + mRNA
+evm.TU.utg4.34  evm.utg4.34     utg4    322860  336271  +       mRNA
+evm.TU.utg4.34  evm.utg4.34.1.5c22f04a  utg4    322860  332365  +       mRNA
+evm.TU.utg4.34  evm.utg4.34.1.5c22f04a.1.5c27949c       utg4    322860  330076  +       mRNA
+evm.TU.utg4.53  evm.utg4.53.1.5c22f048  utg4    537289  549276  -       mRNA
+evm.TU.utg4.53  evm.utg4.53     utg4    533982  549276  -       mRNA
+evm.TU.utg4.53  evm.utg4.53.1.5c22f048.1.5c27949a       utg4    536132  549276  -       mRNA
+
+### Entries share the same gene_id, therefore are likely isoforms/transcript variants of one gene
+
+# 3. Build protein lengths for the cleaned InterProScan FASTA
+use the no-stop FASTA we created for InterProScan
+
+## bash
+cat > scripts/protein_lengths_from_fasta.py <<'PY'
+#!/usr/bin/env python3
+
+from pathlib import Path
+
+inp = Path("02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa")
+out = Path("01_qc/isoforms/interproscan_cleaned_protein_lengths.tsv")
+
+seq_id = None
+chunks = []
+
+with inp.open() as fin, out.open("w") as fout:
+    fout.write("mrna_id\tprotein_length\n")
+
+    def flush():
+        if seq_id is None:
+            return
+        seq = "".join(chunks).replace(" ", "").replace("\t", "")
+        fout.write(f"{seq_id}\t{len(seq)}\n")
+
+    for line in fin:
+        line = line.rstrip("\n")
+        if line.startswith(">"):
+            flush()
+            seq_id = line[1:].strip().split()[0]
+            chunks = []
+        else:
+            chunks.append(line)
+
+    flush()
+
+print(f"Wrote: {out}")
+PY
+
+chmod +x scripts/protein_lengths_from_fasta.py
+python3 scripts/protein_lengths_from_fasta.py
+
+## check
+head 01_qc/isoforms/interproscan_cleaned_protein_lengths.tsv
+
+mrna_id protein_length
+evm.utg4.1      76
+evm.utg4.3      259
+evm.utg4.4      254
+evm.utg4.5      76
+evm.utg4.6      132
+evm.utg4.7      705
+evm.utg4.8      267
+evm.utg4.9      411
+evm.utg4.10     345
+
+wc -l 01_qc/isoforms/interproscan_cleaned_protein_lengths.tsv
+
+55608 01_qc/isoforms/interproscan_cleaned_protein_lengths.tsv
+
+# 4. choose the longest protein per gene
+cat > scripts/select_longest_isoform_per_gene.py <<'PY'
+#!/usr/bin/env python3
+
+from pathlib import Path
+from collections import defaultdict
+
+lookup_file = Path("01_qc/isoforms/gff3_mrna_gene_lookup.tsv")
+length_file = Path("01_qc/isoforms/interproscan_cleaned_protein_lengths.tsv")
+
+out_reps = Path("01_qc/isoforms/representative_longest_protein_per_gene.tsv")
+out_ids = Path("01_qc/isoforms/representative_longest_protein_ids.txt")
+out_excluded = Path("01_qc/isoforms/excluded_nonrepresentative_isoforms.tsv")
+
+mrna_to_gene = {}
+with lookup_file.open() as fh:
+    next(fh)
+    for line in fh:
+        gene_id, mrna_id, seqid, start, end, strand, feature_type = line.rstrip("\n").split("\t")
+        mrna_to_gene[mrna_id] = gene_id
+
+lengths = {}
+with length_file.open() as fh:
+    next(fh)
+    for line in fh:
+        mrna_id, length = line.rstrip("\n").split("\t")
+        lengths[mrna_id] = int(length)
+
+gene_to_mrnas = defaultdict(list)
+
+# Include all proteins. If an ID is not in the GFF3 lookup, treat it as its own gene-like unit.
+for mrna_id, length in lengths.items():
+    gene_id = mrna_to_gene.get(mrna_id, mrna_id)
+    gene_to_mrnas[gene_id].append((mrna_id, length))
+
+representatives = {}
+excluded = []
+
+for gene_id, records in gene_to_mrnas.items():
+    # Sort by longest length, then stable ID order.
+    records_sorted = sorted(records, key=lambda x: (-x[1], x[0]))
+    rep_id, rep_len = records_sorted[0]
+    representatives[gene_id] = (rep_id, rep_len, len(records_sorted))
+
+    for mrna_id, length in records_sorted[1:]:
+        excluded.append((gene_id, mrna_id, length, rep_id, rep_len))
+
+with out_reps.open("w") as out:
+    out.write("gene_id\trepresentative_mrna_id\trepresentative_protein_length\tisoform_count\n")
+    for gene_id, (rep_id, rep_len, iso_count) in sorted(representatives.items()):
+        out.write(f"{gene_id}\t{rep_id}\t{rep_len}\t{iso_count}\n")
+
+with out_ids.open("w") as out:
+    for gene_id, (rep_id, rep_len, iso_count) in sorted(representatives.items()):
+        out.write(rep_id + "\n")
+
+with out_excluded.open("w") as out:
+    out.write("gene_id\texcluded_mrna_id\texcluded_protein_length\trepresentative_mrna_id\trepresentative_protein_length\n")
+    for row in sorted(excluded):
+        out.write("\t".join(map(str, row)) + "\n")
+
+print(f"Genes/loci represented: {len(representatives)}")
+print(f"Representative proteins: {len(representatives)}")
+print(f"Excluded non-representative isoforms: {len(excluded)}")
+print(f"Wrote: {out_reps}")
+print(f"Wrote: {out_ids}")
+print(f"Wrote: {out_excluded}")
+PY
+
+chmod +x scripts/select_longest_isoform_per_gene.py
+python3 scripts/select_longest_isoform_per_gene.py
+
+## check how much redundancy there is:
+
+TOTAL_PROTEINS=$(grep -c '^>' 02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa)
+REP_PROTEINS=$(wc -l < 01_qc/isoforms/representative_longest_protein_ids.txt)
+EXCLUDED=$(($(wc -l < 01_qc/isoforms/excluded_nonrepresentative_isoforms.tsv) - 1))
+
+echo "Total cleaned proteins: $TOTAL_PROTEINS"
+	# Total cleaned proteins: 55607
+
+echo "Representative proteins: $REP_PROTEINS"
+	# Representative proteins: 47671
+
+echo "Excluded non-representative isoforms: $EXCLUDED"
+	# Excluded non-representative isoforms: 7936
+
+awk -v r="$REP_PROTEINS" -v t="$TOTAL_PROTEINS" 'BEGIN {printf "Representative set is %.2f%% of original protein set\n", (r/t)*100}'
+	# Representative set is 85.73% of original protein set
+
+# 5. Extract the representative protein FASTA
+cat > scripts/extract_representative_proteins.py <<'PY'
+#!/usr/bin/env python3
+
+from pathlib import Path
+
+fasta = Path("02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa")
+ids_file = Path("01_qc/isoforms/representative_longest_protein_ids.txt")
+out = Path("02_annotation/interproscan/input/equina_representative_longest_per_gene.no_stop.fa")
+
+keep_ids = set(line.strip() for line in ids_file.open() if line.strip())
+
+written = 0
+keep = False
+
+with fasta.open() as fin, out.open("w") as fout:
+    for line in fin:
+        if line.startswith(">"):
+            seq_id = line[1:].strip().split()[0]
+            keep = seq_id in keep_ids
+            if keep:
+                written += 1
+                fout.write(line)
+        else:
+            if keep:
+                fout.write(line)
+
+print(f"Representative IDs requested: {len(keep_ids)}")
+print(f"Representative FASTA entries written: {written}")
+print(f"Wrote: {out}")
+
+if written != len(keep_ids):
+    raise SystemExit("ERROR: Not all representative IDs were found in the FASTA.")
+PY
+
+chmod +x scripts/extract_representative_proteins.py
+python3 scripts/extract_representative_proteins.py
+	# 47671
+
+# 6. Rerun InterProScan test on representative proteins
+python3 - <<'PY'
+from pathlib import Path
+
+inp = Path("02_annotation/interproscan/input/equina_representative_longest_per_gene.no_stop.fa")
+out = Path("02_annotation/interproscan/test_input/equina_representative_test100.no_stop.fa")
+
+n = 0
+write = False
+
+with inp.open() as fin, out.open("w") as fout:
+    for line in fin:
+        if line.startswith(">"):
+            n += 1
+            write = n <= 100
+        if write:
+            fout.write(line)
+
+print(f"Wrote {min(n, 100)} proteins to {out}")
+PY
+
+## Submit
+sbatch \
+  --job-name=ips_rep_test100 \
+  --export=ALL,QUERY=02_annotation/interproscan/test_input/equina_representative_test100.no_stop.fa,RUN_NAME=equina_representative_test100 \
+  scripts/run_interproscan.sh
+
+### Run Successfully!!
+
+# 2. Run on Full proteome
+sbatch \
+  --job-name=ips_equina_rep \
+  --export=ALL,QUERY=02_annotation/interproscan/input/equina_representative_longest_per_gene.no_stop.fa,RUN_NAME=equina_representative_longest_per_gene \
+  scripts/run_interproscan.sh
+
+# Additional Notes - Why this matters for dark-gene calling
+
+If you keep all isoforms as independent proteins, you can inflate:
+- number of proteins
+- number of “dark” candidates
+- number of duplicated BUSCOs
+- number of apparent species-specific proteins
+- number of apparent no-hit proteins
+
+That is especially risky here because the repo already flags high BUSCO duplication and possible isoform/redundancy issues.
+
+The safer logic is:
+raw proteome
+? clean stop characters
+? parse GFF3 gene/transcript structure
+? choose representative protein per gene
+? run primary annotation on representative set
+? retain all-isoform mapping table for traceability
+? build master table at gene level
+
+

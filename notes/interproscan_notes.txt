@@ -111,3 +111,152 @@ test_all_appl.fasta run without -dp completes, unless your HPC blocks EBI access
 TSV output files are produced and contain matches
 
 # -------------------------------------- progress
+
+# Ran test script:
+The test run failed because InterProScan rejected * characters in the protein FASTA. This is common in predicted protein files: * usually marks a stop codon from translation. InterProScan wants protein sequences without those stop characters.
+
+First create a cleaned protein FASTA, rerun the 100-protein test, then run the full proteome using the cleaned FASTA.
+
+The repository already treats 00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa as the predicted proteome and records that it contains 55,607 entries with matching CDS/transcript/GFF3 IDs. So we should keep the raw file unchanged and create a cleaned derivative for InterProScan.
+
+mkdir -p 02_annotation/interproscan/input
+
+python3 - <<'PY'
+from pathlib import Path
+from collections import Counter
+
+inp = Path("00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa")
+out = Path("02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa")
+report = Path("02_annotation/interproscan/input/equina_interproscan_fasta_cleaning_report.txt")
+
+valid = set("ACDEFGHIKLMNPQRSTVWYBXZJUO")
+seq_id = None
+seq_chunks = []
+
+n_seq = 0
+n_with_star = 0
+n_stars = 0
+invalid_counts = Counter()
+invalid_by_seq = {}
+
+def flush():
+    global n_seq, n_with_star, n_stars
+    if seq_id is None:
+        return
+
+    seq = "".join(seq_chunks).replace(" ", "").replace("\t", "").upper()
+    star_count = seq.count("*")
+    cleaned = seq.replace("*", "")
+
+    n_seq += 1
+    if star_count:
+        n_with_star += 1
+        n_stars += star_count
+
+    bad = sorted(set(cleaned) - valid)
+    if bad:
+        invalid_by_seq[seq_id] = "".join(bad)
+        for char in bad:
+            invalid_counts[char] += cleaned.count(char)
+
+    fout.write(f">{seq_id}\n")
+    for i in range(0, len(cleaned), 60):
+        fout.write(cleaned[i:i+60] + "\n")
+
+with inp.open() as fin, out.open("w") as fout:
+    for line in fin:
+        line = line.rstrip("\n")
+        if line.startswith(">"):
+            flush()
+            seq_id = line[1:].strip()
+            seq_chunks = []
+        else:
+            seq_chunks.append(line)
+    flush()
+
+with report.open("w") as r:
+    r.write("InterProScan FASTA cleaning report\n")
+    r.write("==================================\n\n")
+    r.write(f"Input FASTA:  {inp}\n")
+    r.write(f"Output FASTA: {out}\n\n")
+    r.write(f"Sequences processed: {n_seq}\n")
+    r.write(f"Sequences containing '*': {n_with_star}\n")
+    r.write(f"Total '*' characters removed: {n_stars}\n\n")
+
+    if invalid_counts:
+        r.write("Non-standard characters remaining after '*' removal:\n")
+        for char, count in sorted(invalid_counts.items()):
+            r.write(f"  {char}: {count}\n")
+        r.write("\nSequences with non-standard characters:\n")
+        for sid, chars in list(invalid_by_seq.items())[:100]:
+            r.write(f"  {sid}: {chars}\n")
+    else:
+        r.write("No non-standard amino-acid characters detected after '*' removal.\n")
+
+print(report.read_text())
+PY
+
+Sequences processed: 55607
+Sequences containing '*': 55423
+Total '*' characters removed: 55423
+
+No non-standard amino-acid characters detected after '*' removal.
+
+# verify cleaned 
+grep -c '^>' 00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+grep -c '^>' 02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa
+
+both have "55607"
+
+grep -v '^>' 02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa | grep '\*'
+
+# now proceed with test again:
+
+python3 - <<'PY'
+from pathlib import Path
+
+inp = Path("02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa")
+out = Path("02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa")
+
+n = 0
+write = False
+
+with inp.open() as fin, out.open("w") as fout:
+    for line in fin:
+        if line.startswith(">"):
+            n += 1
+            write = n <= 100
+        if write:
+            fout.write(line)
+
+print(f"Wrote {min(n, 100)} proteins to {out}")
+PY
+
+grep -c '^>' 02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa
+
+## remove failed test outputs
+rm -f 02_annotation/interproscan/raw/equina_test100.interproscan.*
+rm -f 02_annotation/interproscan/summary/equina_test100.*
+
+sbatch \
+  --job-name=ips_test100_clean \
+  --export=ALL,QUERY=02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa,RUN_NAME=equina_test100_clean \
+  scripts/run_interproscan.sh
+
+# progress -----------------------------------
+
+## After success, then run:
+
+sbatch \
+  --job-name=ips_equina_full \
+  --export=ALL,QUERY=02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa,RUN_NAME=equina_full \
+  scripts/run_interproscan.sh
+
+# calculate coverage after full run
+TOTAL=$(grep -c '^>' 02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa)
+MATCHED=$(wc -l < 02_annotation/interproscan/summary/equina_full.interproscan_matched_protein_ids.txt)
+
+echo "Total proteins: $TOTAL"
+echo "Proteins with InterProScan match: $MATCHED"
+
+awk -v m="$MATCHED" -v t="$TOTAL" 'BEGIN {printf "InterProScan coverage: %.2f%%\n", (m/t)*100}'

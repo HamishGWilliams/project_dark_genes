@@ -20,7 +20,7 @@ export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
 export PATH="$JAVA_HOME/bin:$PATH"
 
 # Edit this if your InterProScan installation is elsewhere.
-IPS="${IPS:-$HOME/software/interproscan/interproscan-5.77-108.0/interproscan.sh}"
+IPS="${IPS:-/uoa/scratch/users/r02hw22/software/interproscan/interproscan-5.77-108.0/interproscan.sh}"
 
 THREADS="${SLURM_NTASKS:-16}"
 

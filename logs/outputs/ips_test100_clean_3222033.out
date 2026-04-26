@@ -1,0 +1,10 @@
+========================================
+Project dir : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+InterProScan: /uoa/home/r02hw22/software/interproscan/interproscan-5.77-108.0/interproscan.sh
+Query FASTA : 02_annotation/interproscan/test_input/equina_test100.no_stop.aa.fa
+Run name    : equina_test100_clean
+Threads     : 16
+JAVA_HOME   : /opt/software/uoa/spack/linux-rhel8-x86_64/gcc-12.3.0/openjdk-11.0.20.1_1-yc3btgqcrd3r6ldr7kp4bs6jlrc36sjg
+Temp dir    : /uoa/scratch/users/r02hw22/project_dark_genes/interproscan_tmp_3222033
+Output base : 02_annotation/interproscan/raw/equina_test100_clean.interproscan
+========================================

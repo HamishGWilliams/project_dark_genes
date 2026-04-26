@@ -1,0 +1,11 @@
+InterProScan FASTA cleaning report
+==================================
+
+Input FASTA:  00_raw/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.fa
+Output FASTA: 02_annotation/interproscan/input/equina_smart.rnam-trna.merged.ggf.curated.remredun.aa.no_stop.fa
+
+Sequences processed: 55607
+Sequences containing '*': 55423
+Total '*' characters removed: 55423
+
+No non-standard amino-acid characters detected after '*' removal.
