@@ -128,3 +128,4 @@ busco_downloads/
 *.tmp
 *.temp
 *.swp
+02_annotation/blastp/*.blastp.tsv
