@@ -119,6 +119,8 @@ work/
 results/raw/
 results/intermediate/
 busco_downloads/
+02_annotation/blastp/
+02_annotation/db/
 
 # Logs / temp files
 *.log
