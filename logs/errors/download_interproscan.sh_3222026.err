@@ -1,0 +1,7 @@
+environment: line 17: /usr/local/lmod/lmod/libexec/lmod: No such file or directory
+environment: line 17: /usr/local/lmod/lmod/libexec/lmod: No such file or directory
+tar (child): interproscan--64-bit.tar.gz: Cannot open: No such file or directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+/tmp/slurmd/job3222026/slurm_script: line 18: cd: interproscan-: No such file or directory

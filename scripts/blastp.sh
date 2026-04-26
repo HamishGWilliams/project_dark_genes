@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=blastp_uniprot
-#SBATCH --mem=256G
+#SBATCH --mem=300G
 #SBATCH --partition=uoa-compute
 #SBATCH -N 1
 #SBATCH -n 8
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=r02hw22@abdn.ac.uk
-#SBATCH --time=2-00:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
 
@@ -16,6 +16,7 @@ cd "$PROJECT_DIR"
 module load blast-plus/2.16.0
 
 THREADS="${SLURM_NTASKS:-8}"
+TOP_N=10
 
 mkdir -p 02_annotation/db
 mkdir -p 02_annotation/blastp
@@ -43,8 +44,10 @@ run_blastp_search () {
     echo "Running BLASTp for: ${label}"
     echo "Reference FASTA: $ref_fasta"
     echo "BLAST DB:        $blast_db"
-    echo "Output TSV:      $out_tsv"
+    echo "Raw top 10 TSV:  $out_tsv"
+    echo "Best hit TSV:    $top_hits"
     echo "Threads:         $THREADS"
+    echo "Top N:           $TOP_N"
     echo "========================================"
 
     makeblastdb \
@@ -57,7 +60,9 @@ run_blastp_search () {
       -db "$blast_db" \
       -out "$out_tsv" \
       -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore" \
-      -num_threads "$THREADS"
+      -num_threads "$THREADS" \
+      -max_target_seqs "$TOP_N" \
+      -max_hsps 1
 
     awk -F '\t' '!seen[$1]++' "$out_tsv" > "$top_hits"
 
@@ -66,7 +71,7 @@ run_blastp_search () {
     wc -l "$out_tsv" "$top_hits"
 
     echo
-    echo "First few top hits for ${label}:"
+    echo "First few best hits for ${label}:"
     head "$top_hits"
     echo
 }
@@ -75,14 +80,14 @@ run_blastp_search \
     "Swiss-Prot" \
     "$SWISSPROT_FASTA" \
     "02_annotation/db/swissprot_all_blast" \
-    "02_annotation/blastp/equina_vs_swissprot_all.blastp.tsv" \
-    "02_annotation/blastp/equina_vs_swissprot_all.top_hits.tsv"
+    "02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw.tsv" \
+    "02_annotation/blastp/equina_vs_swissprot_all.best_hit.tsv"
 
 run_blastp_search \
     "Cnidarian TrEMBL" \
     "$TREMBL_FASTA" \
     "02_annotation/db/trembl_cnidaria_selected_blast" \
-    "02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.tsv" \
-    "02_annotation/blastp/equina_vs_trembl_cnidaria_selected.top_hits.tsv"
+    "02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw.tsv" \
+    "02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit.tsv"
 
 echo "All BLASTp searches completed successfully."

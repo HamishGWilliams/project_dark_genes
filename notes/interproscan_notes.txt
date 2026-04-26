@@ -1,0 +1,113 @@
+[r02hw22@maxlogin2(maxwell) project_dark_genes]$ uname -a
+Linux maxlogin2.int.maxwell.abdn.ac.uk 4.18.0-372.13.1.el8_6.x86_64 #1 SMP Mon Jun 6 15:05:22 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+[r02hw22@maxlogin2(maxwell) project_dark_genes]$ uname -m
+x86_64
+
+
+# Looking for required packages and versions
+
+## python
+
+module load python/3.9.12
+$ python3 --version
+Python 3.9.12
+$ which python3
+/opt/software/uoa/spack-sw/linux-rhel8-x86_64/gcc-12.1.0/python-3.9.12-u2o5ndnqcbr26nc573ubjrvv7o5n5wts/bin/python3
+
+## java
+module load openjdk/11.0.20.1_1
+
+$ java -version
+openjdk version "11.0.20.1" 2023-08-24
+OpenJDK Runtime Environment Temurin-11.0.20.1+1 (build 11.0.20.1+1)
+OpenJDK 64-Bit Server VM Temurin-11.0.20.1+1 (build 11.0.20.1+1, mixed mode)
+
+$ which java
+/opt/software/uoa/spack/linux-rhel8-x86_64/gcc-12.3.0/openjdk-11.0.20.1_1-yc3btgqcrd3r6ldr7kp4bs6jlrc36sjg/bin/java
+
+$ echo $JAVA_HOME
+/opt/software/uoa/spack/linux-rhel8-x86_64/gcc-12.3.0/openjdk-11.0.20.1_1-yc3btgqcrd3r6ldr7kp4bs6jlrc36sjg
+
+# full install check
+echo "Architecture:"
+uname -m
+
+echo "Perl:"
+perl -version | head -n 2
+This is perl 5, version 26, subversion 3 (v5.26.3) built for x86_64-linux-thread-multi
+
+echo "Python:"
+python3 --version
+which python3
+
+echo "Java:"
+java -version
+which java
+echo "JAVA_HOME=$JAVA_HOME"
+
+
+# Downloading interproscan and the MD5 checksum
+## make dir
+mkdir -p ~/sharedscratch/software/interproscan
+cd ~/sharedscratch/software/interproscan
+
+## set ver id
+IPS_VERSION=5.77-108.0
+
+## get package
+wget -c https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${IPS_VERSION}/interproscan-${IPS_VERSION}-64-bit.tar.gz
+
+wget -c https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${IPS_VERSION}/interproscan-${IPS_VERSION}-64-bit.tar.gz.md5
+
+## check
+md5sum -c interproscan-${IPS_VERSION}-64-bit.tar.gz.md5
+
+## extract
+tar -pxvzf interproscan-${IPS_VERSION}-64-bit.tar.gz
+cd interproscan-${IPS_VERSION}
+
+## check
+ls -lh interproscan.sh
+test -x interproscan.sh && echo "interproscan.sh is executable"
+
+ls -lh interproscan.properties
+
+# initialise/index models
+python3 setup.py -f interproscan.properties
+
+# check InterProScan
+./interproscan.sh
+./interproscan.sh -version
+
+# run official test jobs
+./interproscan.sh -i test_all_appl.fasta -f tsv -dp
+
+./interproscan.sh -i test_all_appl.fasta -f tsv
+
+# validate
+ls -lh test_all_appl.fasta*.tsv
+head test_all_appl.fasta.tsv
+wc -l test_all_appl.fasta.tsv
+
+cut -f1-8 test_all_appl.fasta.tsv | head
+
+# final installation checklist
+uname -m
+perl -version
+python3 --version
+java -version
+echo $JAVA_HOME
+test -x interproscan.sh && echo "Executable OK"
+./interproscan.sh -version
+ls -lh test_all_appl.fasta*.tsv
+
+## should look like:
+md5sum check returned OK
+tar extraction completed without errors
+setup.py completed successfully
+./interproscan.sh prints usage/version correctly
+test_all_appl.fasta run with -dp completes
+test_all_appl.fasta run without -dp completes, unless your HPC blocks EBI access
+TSV output files are produced and contain matches
+
+# -------------------------------------- progress
