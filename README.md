@@ -2,6 +2,10 @@
 
 Exploring and understanding how to identify novel **“dark” genes** in a non-model cnidarian dataset using *Actinia equina* sequence resources, genome annotation files, and RNA-seq data on an HPC workflow.
 
+## What I hope to develop
+
+Althought this project is focused on Actinia equina for the time being. Once I have validated this pipeline and shown it works for this species, I would like to transform this repository into a space to walk people through various bioinformatic methods and techniques towards dark gene novelty, providing a clear and structured guide walking through the relevant methods, including downloadig packages. I do not want to be the "de-facto" person or pipeline for doing this type of analysis, but if I can provdie a scaffold/backbone for people (especially early career researchers) to develop their own bioinformatic pipelines and probvide some clarity on what and why I/We use certain methods and threshold, then this project's secondary goals will be complete. 
+
 ## Project aim
 
 The goal of this project is to identify and prioritise **candidate dark genes** in *Actinia equina* by combining:
