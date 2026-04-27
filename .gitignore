@@ -119,8 +119,6 @@ work/
 results/raw/
 results/intermediate/
 busco_downloads/
-02_annotation/blastp/*
-02_annotation/blastp/equina_vs_swissprot_all.blastp.tsv
 02_annotation/db/*
 
 # Logs / temp files
@@ -128,28 +126,35 @@ busco_downloads/
 *.tmp
 *.temp
 *.swp
-02_annotation/blastp/*.blastp.tsv
 
-# InterProScan raw outputs and temporary files
-02_annotation/interproscan/raw/
-02_annotation/interproscan/tmp/
-02_annotation/interproscan/test_input/
-*.xml
-*.json
-
-# Local software, environments, and databases
+# Local software, environments, package caches, and databases
 conda_envs/
+conda_pkgs/
 software/
 eggnog_data/
 .eggnog_data/
 
-# Large annotation outputs generated on HPC
+# Large BLAST/DIAMOND outputs generated on HPC
+02_annotation/blastp/*
+02_annotation/diamond/*.tsv
+!02_annotation/diamond/*.top_hits.tsv
+!02_annotation/diamond/*filtered*.tsv
+
+# InterProScan raw outputs, summaries, and temporary files
+02_annotation/interproscan/raw/
+02_annotation/interproscan/tmp/
+02_annotation/interproscan/test_input/
 02_annotation/interproscan/summary/*.tsv
 02_annotation/interproscan/summary/*.gff3
 02_annotation/interproscan/summary/*.xml
 02_annotation/interproscan/summary/*.json
+*.xml
+*.json
+
+# eggNOG and SignalP large outputs generated on HPC
 02_annotation/eggnog/raw/
 02_annotation/eggnog/tmp/
+02_annotation/eggnog/summary/*.tsv
 02_annotation/signalp/raw/
 02_annotation/signalp/tmp/
 
