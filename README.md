@@ -48,6 +48,8 @@ In this project, a **dark gene** is treated as a gene/protein that remains unres
 - the available data now support a **genome-aware and expression-aware dark-gene workflow**
 - a representative protein set has been generated to reduce redundancy from isoforms
 - the final annotation workflow is being revised so DIAMOND/BLASTp evidence is filtered before master-table classification
+- the 100-protein test group has successfully passed the revised DIAMOND/BLASTp workflow using `e-value <= 1e-5` filtering and the expanded outfmt 6 columns: `qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen`
+- full representative DIAMOND and BLASTp jobs are currently being run with the same threshold-filtered homology strategy
 
 ---
 
@@ -115,6 +117,7 @@ This means downstream dark-gene classification should be **conservative**, parti
 - defined a **hierarchical UniProt strategy**: Swiss-Prot first, Cnidaria-TrEMBL second
 - installed and tested InterProScan, eggNOG-mapper, and SignalP
 - built and QC-tested a 100-protein master annotation table
+- successfully updated and QC-tested the 100-protein DIAMOND/BLASTp homology workflow with `e-value <= 1e-5`, expanded outfmt 6 fields including `qlen` and `slen`, post-processing e-value filtering, and coverage-field propagation into the master table
 - recorded the revised annotation-threshold plan in `notes/annotation_threshold_revision_plan.md`
 
 ---
@@ -122,7 +125,8 @@ This means downstream dark-gene classification should be **conservative**, parti
 ## Immediate next steps
 
 ### 1. Complete threshold-filtered homology annotation
-- revise DIAMOND/BLASTp searches or post-processing to use `e-value <= 1e-5`
+- full representative DIAMOND searches are currently running or being regenerated using `e-value <= 1e-5` and expanded outfmt 6 fields
+- full representative BLASTp searches are currently running or being regenerated using `e-value <= 1e-5` and expanded outfmt 6 fields
 - retain `pident`, alignment length, bitscore, query length, subject length, and coverage fields where possible
 - generate filtered top-hit files only after applying the e-value threshold
 - avoid using unfiltered top-hit files for final dark-gene classification
@@ -131,7 +135,7 @@ This means downstream dark-gene classification should be **conservative**, parti
 - confirm full InterProScan output on the representative proteome
 - confirm full eggNOG-mapper output on the representative proteome
 - confirm full SignalP output on the representative proteome
-- complete or regenerate BLASTp outputs using the revised threshold strategy
+- confirm full DIAMOND and BLASTp filtered outputs after current jobs finish
 
 ### 3. Build genome-aware lookup tables
 - parse the GFF3 into a gene → transcript → protein → contig lookup table
@@ -206,10 +210,10 @@ flowchart TD
     K3 --> L3[BLASTp Swiss-Prot search]
     K3 --> L4[BLASTp Cnidaria-TrEMBL search]
 
-    L1 --> M1[Filter hits<br/>e-value <= 1e-5]
-    L2 --> M2[Filter hits<br/>e-value <= 1e-5]
-    L3 --> M3[Filter hits<br/>e-value <= 1e-5]
-    L4 --> M4[Filter hits<br/>e-value <= 1e-5]
+    L1 --> M1[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
+    L2 --> M2[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
+    L3 --> M3[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
+    L4 --> M4[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
 
     M1 --> N1[Filtered Swiss-Prot top hits]
     M2 --> N2[Filtered Cnidaria-TrEMBL top hits]
@@ -242,7 +246,7 @@ flowchart TD
     Q --> Q1[Test100 master table]
     Q1 --> Q2[Test100 QC checks]
     Q2 --> Q3{QC passed?}
-    Q3 -->|Yes| Q4[Full representative master table]
+    Q3 -->|Yes; threshold-filtered test successful| Q4[Full representative master table]
     Q3 -->|No| Q5[Revise scripts or source paths]
     Q5 --> Q
     Q4 --> Q6[Full master-table QC]
