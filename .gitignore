@@ -112,6 +112,16 @@ rsconnect/
 *.h3m
 *.h3p
 
+# Logs / SLURM / temp files
+*.log
+*.out
+*.err
+*.tmp
+*.temp
+*.swp
+logs/outputs/
+logs/errors/
+
 # Common large results / scratch directories
 scratch/
 tmp/
@@ -119,13 +129,6 @@ work/
 results/raw/
 results/intermediate/
 busco_downloads/
-02_annotation/db/*
-
-# Logs / temp files
-*.log
-*.tmp
-*.temp
-*.swp
 
 # Local software, environments, package caches, and databases
 conda_envs/
@@ -133,14 +136,24 @@ conda_pkgs/
 software/
 eggnog_data/
 .eggnog_data/
+.mamba/
+.conda/
 
-# Large BLAST/DIAMOND outputs generated on HPC
-02_annotation/blastp/*
+# Reference databases and generated search databases
+02_annotation/db/
+02_annotation/reference_dbs/
+
+# Large BLAST outputs generated on HPC
+02_annotation/blastp/
+
+# Large DIAMOND outputs generated on HPC
+# Raw all-hit TSVs are usually too large for Git. Keep only curated/top-hit summaries if explicitly added.
 02_annotation/diamond/*.tsv
 !02_annotation/diamond/*.top_hits.tsv
-!02_annotation/diamond/*filtered*.tsv
+!02_annotation/diamond/*.best_hit*.tsv
+!02_annotation/diamond/*.filtered.top_hits.tsv
 
-# InterProScan raw outputs, summaries, and temporary files
+# InterProScan outputs generated on HPC
 02_annotation/interproscan/raw/
 02_annotation/interproscan/tmp/
 02_annotation/interproscan/test_input/
@@ -151,12 +164,23 @@ eggnog_data/
 *.xml
 *.json
 
-# eggNOG and SignalP large outputs generated on HPC
+# eggNOG outputs generated on HPC
 02_annotation/eggnog/raw/
 02_annotation/eggnog/tmp/
+02_annotation/eggnog/test_input/
 02_annotation/eggnog/summary/*.tsv
+02_annotation/eggnog/summary/*.txt
+
+# SignalP outputs generated on HPC
 02_annotation/signalp/raw/
 02_annotation/signalp/tmp/
+02_annotation/signalp/test_input/
+
+# Master annotation outputs generated on HPC
+# Keep scripts and notes in Git; keep full/test output tables local unless deliberately added later.
+02_annotation/master/**/*.tsv
+02_annotation/master/**/*.txt
+02_annotation/master/**/qc/
 
 # Very large binaries and compiled tool artefacts
 **/bin/mmseqs
