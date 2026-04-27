@@ -58,3 +58,22 @@ Maximum file size: 3000000000B
 Adding sequences from FASTA; added 440046 sequences in 17.1318 seconds.
 
 
+
+Line counts for Cnidarian TrEMBL:
+  454591 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw_representative.tsv
+   47169 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv
+  501760 total
+
+First few best hits for Cnidarian TrEMBL:
+evm.utg4.1	tr|A0A2B4RWL5|A0A2B4RWL5_STYPI	29.091	55	32	1	19	73	490	537	0.75	30.8
+evm.utg4.3	tr|A0A6P8J6P1|A0A6P8J6P1_ACTTE	100.000	259	0	0	1	259	1	259	0.0	539
+evm.utg4.4	tr|A0A6P8J1S8|A0A6P8J1S8_ACTTE	99.197	249	2	0	1	249	1	249	0.0	514
+evm.utg4.5	tr|A0A2B4RWL5|A0A2B4RWL5_STYPI	29.091	55	32	1	19	73	490	537	0.84	30.8
+evm.utg4.6	tr|A7T129|A7T129_NEMVE	46.721	122	50	7	12	127	10	122	2.08e-17	80.5
+evm.utg4.7	tr|A0A6P8J9J7|A0A6P8J9J7_ACTTE	99.858	705	1	0	1	705	52	756	0.0	1478
+evm.utg4.8	tr|A0A6P8J6J5|A0A6P8J6J5_ACTTE	100.000	267	0	0	1	267	1	267	0.0	540
+evm.utg4.9	tr|A0A6P8J1Y9|A0A6P8J1Y9_ACTTE	100.000	411	0	0	1	411	1	411	0.0	854
+evm.utg4.10	tr|A0A9W9Z0I3|A0A9W9Z0I3_9CNID	78.621	290	53	2	13	296	9	295	3.79e-117	343
+evm.utg4.11	tr|A0A6P8J0X1|A0A6P8J0X1_ACTTE	95.134	596	7	1	1	596	1	574	0.0	1149
+
+All BLASTp searches completed successfully.

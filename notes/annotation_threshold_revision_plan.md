@@ -64,8 +64,8 @@ Only threshold-passing sequence hits should be allowed to assign categories 1 or
 
 ### 1. Documentation
 
-- [ ] Record the decision to use `e-value <= 1e-5` for DIAMOND/BLASTp annotation evidence.
-- [ ] Note that this threshold is aligned with the Stephens et al. coral dark-gene workflow.
+- [X] Record the decision to use `e-value <= 1e-5` for DIAMOND/BLASTp annotation evidence.
+- [X] Note that this threshold is aligned with the Stephens et al. coral dark-gene workflow.
 - [ ] Document that identity and coverage are retained for QC/reporting, not as hard filters in the main classification.
 - [ ] Add a short methods note explaining ambiguous-description filtering.
 
