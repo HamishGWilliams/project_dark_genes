@@ -77,7 +77,7 @@ python3 scripts/build_master_annotation_test100.py \
   --diamond-trembl-cnidaria 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv \
   --blastp-swissprot 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv \
   --blastp-trembl-cnidaria 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv \
-  --interproscan 02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv \ # Update with new name
+  --interproscan 02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan.tsv \
   --eggnog 02_annotation/eggnog/raw/equina_representative_full.emapper.annotations \ 
   --signalp 02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv \
   --out 02_annotation/master/test100/equina_representative.master_annotation.tsv

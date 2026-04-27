@@ -1,0 +1,17 @@
+  97488 MobiDBLite
+  57863 Pfam
+  56077 Gene3D
+  47063 SMART
+  44567 SUPERFAMILY
+  42209 ProSiteProfiles
+  34537 PRINTS
+  28830 PANTHER
+  20469 CDD
+  17967 Coils
+  17694 FunFam
+  16759 ProSitePatterns
+   2107 NCBIfam
+   1140 PIRSF
+    474 Hamap
+    273 SFLD
+      1 AntiFam
