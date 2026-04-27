@@ -136,3 +136,26 @@ busco_downloads/
 02_annotation/interproscan/test_input/
 *.xml
 *.json
+
+# Local software, environments, and databases
+conda_envs/
+software/
+eggnog_data/
+.eggnog_data/
+
+# Large annotation outputs generated on HPC
+02_annotation/interproscan/summary/*.tsv
+02_annotation/interproscan/summary/*.gff3
+02_annotation/interproscan/summary/*.xml
+02_annotation/interproscan/summary/*.json
+02_annotation/eggnog/raw/
+02_annotation/eggnog/tmp/
+02_annotation/signalp/raw/
+02_annotation/signalp/tmp/
+
+# Very large binaries and compiled tool artefacts
+**/bin/mmseqs
+**/mmseqs
+*.so
+*.a
+*.o
