@@ -32,10 +32,10 @@ find 02_annotation/diamond 02_annotation/blastp \
 # 4. Run compiler
 python3 scripts/build_master_annotation_test100.py \
   --fasta 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa \
-  --diamond-swissprot 02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv \
-  --diamond-trembl-cnidaria 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv \
-  --blastp-swissprot 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv \
-  --blastp-trembl-cnidaria 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv \
+  --diamond-swissprot 02_annotation/diamond/filtered/equina_test100_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv \
+  --diamond-trembl-cnidaria 02_annotation/diamond/filtered/equina_test100_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv \
+  --blastp-swissprot 02_annotation/blastp/filtered/equina_test100_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv \
+  --blastp-trembl-cnidaria 02_annotation/blastp/filtered/equina_test100_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv \
   --interproscan 02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv \
   --eggnog 02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations \
   --signalp 02_annotation/signalp/summary/equina_representative_test100.signalp5_summary.tsv \

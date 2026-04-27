@@ -9,11 +9,11 @@ SUMMARY="02_annotation/master/test100/equina_representative_test100.master_annot
 FASTA="02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa"
 REP_LOOKUP="01_qc/isoforms/representative_longest_protein_per_gene.tsv"
 
-DIAMOND_SWISSPROT="02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv"
-DIAMOND_TREMBL_CNIDARIA="02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv"
+DIAMOND_SWISSPROT="02_annotation/diamond/filtered/equina_test100_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv"
+DIAMOND_TREMBL_CNIDARIA="02_annotation/diamond/filtered/equina_test100_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv"
 
-BLASTP_SWISSPROT="02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv"
-BLASTP_TREMBL_CNIDARIA="02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv"
+BLASTP_SWISSPROT="02_annotation/blastp/filtered/equina_test100_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv"
+BLASTP_TREMBL_CNIDARIA="02_annotation/blastp/filtered/equina_test100_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv"
 
 INTERPROSCAN="02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv"
 EGGNOG="02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations"
@@ -28,7 +28,6 @@ python3 - <<'PY'
 from pathlib import Path
 import csv
 from collections import defaultdict, Counter
-import math
 
 
 PROJECT_DIR = Path("/uoa/home/r02hw22/sharedscratch/project_dark_genes")
@@ -39,11 +38,11 @@ SUMMARY = Path("02_annotation/master/test100/equina_representative_test100.maste
 FASTA = Path("02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa")
 REP_LOOKUP = Path("01_qc/isoforms/representative_longest_protein_per_gene.tsv")
 
-DIAMOND_SWISSPROT = Path("02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv")
-DIAMOND_TREMBL_CNIDARIA = Path("02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv")
+DIAMOND_SWISSPROT = Path("02_annotation/diamond/filtered/equina_test100_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv")
+DIAMOND_TREMBL_CNIDARIA = Path("02_annotation/diamond/filtered/equina_test100_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv")
 
-BLASTP_SWISSPROT = Path("02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv")
-BLASTP_TREMBL_CNIDARIA = Path("02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv")
+BLASTP_SWISSPROT = Path("02_annotation/blastp/filtered/equina_test100_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv")
+BLASTP_TREMBL_CNIDARIA = Path("02_annotation/blastp/filtered/equina_test100_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv")
 
 INTERPROSCAN = Path("02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv")
 EGGNOG = Path("02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations")
@@ -51,6 +50,8 @@ SIGNALP = Path("02_annotation/signalp/summary/equina_representative_test100.sign
 
 QC_DIR = Path("02_annotation/master/test100/qc")
 REPORT = QC_DIR / "equina_representative_test100.master_annotation.qc_report.txt"
+
+HOMOLOGY_EVALUE_THRESHOLD = 1e-5
 
 ANNOTATION_CLASS_ORDER = [
     "annotated_swissprot_supported",
@@ -64,6 +65,19 @@ ANNOTATION_CLASS_ORDER = [
 
 def exists_nonempty(path):
     return path.exists() and path.stat().st_size > 0
+
+
+def parse_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def format_float(value, digits=4):
+    if value is None:
+        return ""
+    return f"{value:.{digits}f}"
 
 
 def write_mismatch_file(name, rows, header):
@@ -87,9 +101,11 @@ def read_fasta_ids(path):
     with path.open() as fh:
         for line in fh:
             line = line.rstrip("\n")
+
             if line.startswith(">"):
                 if current is not None:
                     lengths[current] = len("".join(chunks))
+
                 current = line[1:].strip().split()[0]
                 ids.append(current)
                 chunks = []
@@ -115,8 +131,10 @@ def load_master(path):
 
     for row in rows:
         pid = row["protein_id"]
+
         if pid in by_id:
             duplicates.append(pid)
+
         by_id[pid] = row
 
     return rows, by_id, duplicates
@@ -131,17 +149,89 @@ def load_representative_lookup(path):
 
     with path.open() as fh:
         reader = csv.DictReader(fh, delimiter="\t")
+
         for row in reader:
             rep_id = row.get("representative_mrna_id", "")
+
             if not rep_id:
                 continue
+
             rep_to_gene[rep_id] = row.get("gene_id", "")
             rep_to_isoform_count[rep_id] = row.get("isoform_count", "")
 
     return rep_to_gene, rep_to_isoform_count
 
 
+def scan_homology_file_for_evalue_failures(path, source_name):
+    """
+    Scan every row in a homology source file and report any row that does not
+    pass the paper-aligned e-value threshold.
+
+    Expected columns:
+    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+    """
+    failures = []
+
+    if not exists_nonempty(path):
+        return failures
+
+    with path.open() as fh:
+        for line_number, line in enumerate(fh, start=1):
+            if not line.strip():
+                continue
+
+            parts = line.rstrip("\n").split("\t")
+
+            if len(parts) < 12:
+                failures.append([
+                    source_name,
+                    line_number,
+                    parts[0] if parts else "",
+                    "too_few_columns",
+                    "",
+                    HOMOLOGY_EVALUE_THRESHOLD,
+                ])
+                continue
+
+            qid = parts[0]
+            evalue_raw = parts[10]
+            evalue = parse_float(evalue_raw)
+
+            if evalue is None:
+                failures.append([
+                    source_name,
+                    line_number,
+                    qid,
+                    "invalid_evalue",
+                    evalue_raw,
+                    HOMOLOGY_EVALUE_THRESHOLD,
+                ])
+                continue
+
+            if evalue > HOMOLOGY_EVALUE_THRESHOLD:
+                failures.append([
+                    source_name,
+                    line_number,
+                    qid,
+                    "evalue_above_threshold",
+                    evalue_raw,
+                    HOMOLOGY_EVALUE_THRESHOLD,
+                ])
+
+    return failures
+
+
 def load_top_hits(path):
+    """
+    DIAMOND / BLASTp filtered top-hit table.
+
+    Preferred outfmt 6 columns:
+    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+
+    Legacy 12-column files are tolerated, but qlen/slen/coverage fields will be blank.
+
+    Only threshold-passing hits are loaded.
+    """
     hits = {}
 
     if not exists_nonempty(path):
@@ -153,17 +243,49 @@ def load_top_hits(path):
                 continue
 
             parts = line.rstrip("\n").split("\t")
+
             if len(parts) < 12:
                 continue
 
             qid = parts[0]
+            evalue = parts[10]
+            evalue_float = parse_float(evalue)
+
+            if evalue_float is None:
+                continue
+
+            if evalue_float > HOMOLOGY_EVALUE_THRESHOLD:
+                continue
+
+            aln_length = parts[3]
+            qlen = parts[12] if len(parts) > 12 else ""
+            slen = parts[13] if len(parts) > 13 else ""
+
+            aln_length_float = parse_float(aln_length)
+            qlen_float = parse_float(qlen)
+            slen_float = parse_float(slen)
+
+            query_coverage = None
+            subject_coverage = None
+
+            if aln_length_float is not None and qlen_float not in (None, 0):
+                query_coverage = aln_length_float / qlen_float
+
+            if aln_length_float is not None and slen_float not in (None, 0):
+                subject_coverage = aln_length_float / slen_float
 
             if qid not in hits:
                 hits[qid] = {
                     "subject": parts[1],
                     "pident": parts[2],
-                    "evalue": parts[10],
+                    "aln_length": aln_length,
+                    "evalue": evalue,
                     "bitscore": parts[11],
+                    "qlen": qlen,
+                    "slen": slen,
+                    "query_coverage": format_float(query_coverage),
+                    "subject_coverage": format_float(subject_coverage),
+                    "evalue_pass": "yes",
                 }
 
     return hits
@@ -175,15 +297,17 @@ def join_set(values):
 
 
 def load_interproscan(path):
-    data = defaultdict(lambda: {
-        "interpro_hit": "no",
-        "interpro_member_databases": set(),
-        "interpro_signature_accessions": set(),
-        "interpro_accessions": set(),
-        "interpro_descriptions": set(),
-        "go_terms_interpro": set(),
-        "pathways_interpro": set(),
-    })
+    data = defaultdict(
+        lambda: {
+            "interpro_hit": "no",
+            "interpro_member_databases": set(),
+            "interpro_signature_accessions": set(),
+            "interpro_accessions": set(),
+            "interpro_descriptions": set(),
+            "go_terms_interpro": set(),
+            "pathways_interpro": set(),
+        }
+    )
 
     if not exists_nonempty(path):
         return data
@@ -194,6 +318,7 @@ def load_interproscan(path):
                 continue
 
             parts = line.rstrip("\n").split("\t")
+
             if len(parts) < 11:
                 continue
 
@@ -210,10 +335,13 @@ def load_interproscan(path):
 
             if analysis != "-":
                 rec["interpro_member_databases"].add(analysis)
+
             if sig_acc != "-":
                 rec["interpro_signature_accessions"].add(sig_acc)
+
             if ipr_acc != "-":
                 rec["interpro_accessions"].add(ipr_acc)
+
             if ipr_desc != "-":
                 rec["interpro_descriptions"].add(ipr_desc)
 
@@ -228,6 +356,7 @@ def load_interproscan(path):
                         rec["pathways_interpro"].add(pathway)
 
     final = {}
+
     for pid, rec in data.items():
         final[pid] = {
             "interpro_hit": rec["interpro_hit"],
@@ -299,6 +428,7 @@ def load_eggnog(path):
             else:
                 row = {}
                 qid = parts[0]
+
                 for i, name in enumerate(fallback_names):
                     row[name] = parts[i] if i < len(parts) else ""
 
@@ -335,6 +465,7 @@ def load_signalp(path):
 
             raw = line.rstrip("\n")
             parts = raw.split()
+
             if not parts:
                 continue
 
@@ -379,14 +510,6 @@ def expected_class(row):
 
 
 def compare_hit_source(master_by_id, source_hits, source_name, master_prefix):
-    """
-    Compare homology source hits against the master table.
-
-    Important:
-    For test100 validation, only proteins present in the master table are checked.
-    Source-file IDs outside the test100 FASTA are ignored because the DIAMOND/BLASTp
-    source files may come from a larger representative/full run.
-    """
     mismatches = []
 
     for pid in sorted(master_by_id):
@@ -402,11 +525,18 @@ def compare_hit_source(master_by_id, source_hits, source_name, master_prefix):
 
         if in_source:
             source = source_hits[pid]
+
             field_map = {
                 "subject": f"{master_prefix}_subject",
                 "pident": f"{master_prefix}_pident",
+                "aln_length": f"{master_prefix}_aln_length",
                 "evalue": f"{master_prefix}_evalue",
                 "bitscore": f"{master_prefix}_bitscore",
+                "qlen": f"{master_prefix}_qlen",
+                "slen": f"{master_prefix}_slen",
+                "query_coverage": f"{master_prefix}_query_coverage",
+                "subject_coverage": f"{master_prefix}_subject_coverage",
+                "evalue_pass": f"{master_prefix}_evalue_pass",
             }
 
             for source_field, master_field in field_map.items():
@@ -423,6 +553,7 @@ def compare_hit_source(master_by_id, source_hits, source_name, master_prefix):
                     ])
 
     return mismatches
+
 
 def compare_interpro(master_by_id, interpro):
     fields = [
@@ -447,11 +578,7 @@ def compare_interpro(master_by_id, interpro):
         source = interpro.get(pid, {})
 
         for field in fields:
-            if field == "interpro_hit":
-                expected_value = source.get(field, "no")
-            else:
-                expected_value = source.get(field, "")
-
+            expected_value = source.get(field, "no") if field == "interpro_hit" else source.get(field, "")
             observed_value = row.get(field, "")
 
             if expected_value != observed_value:
@@ -490,11 +617,7 @@ def compare_eggnog(master_by_id, eggnog):
         source = eggnog.get(pid, {})
 
         for field in fields:
-            if field == "eggnog_hit":
-                expected_value = source.get(field, "no")
-            else:
-                expected_value = source.get(field, "")
-
+            expected_value = source.get(field, "no") if field == "eggnog_hit" else source.get(field, "")
             observed_value = row.get(field, "")
 
             if expected_value != observed_value:
@@ -522,9 +645,7 @@ def compare_signalp(master_by_id, signalp):
         source = signalp.get(pid, {})
 
         for field in fields:
-            if field == "signalp_result_present":
-                expected_value = source.get(field, "no")
-            elif field == "signalp_positive":
+            if field in {"signalp_result_present", "signalp_positive"}:
                 expected_value = source.get(field, "no")
             else:
                 expected_value = source.get(field, "")
@@ -558,6 +679,7 @@ def parse_summary_counts(summary_path):
                     continue
 
                 parts = line.split("\t")
+
                 if len(parts) >= 2:
                     try:
                         counts[parts[0]] = int(parts[1])
@@ -576,27 +698,17 @@ def main():
     def add_check(name, passed, detail):
         nonlocal failed_checks
         status = "PASS" if passed else "FAIL"
+
         if not passed:
             failed_checks += 1
+
         report_lines.append(f"{status}\t{name}\t{detail}")
 
-    # Load master
     master_rows, master_by_id, duplicate_master_ids = load_master(MASTER)
-
-    # FASTA row universe
     fasta_ids, fasta_lengths = read_fasta_ids(FASTA)
 
-    add_check(
-        "master_file_exists",
-        exists_nonempty(MASTER),
-        str(MASTER),
-    )
-
-    add_check(
-        "fasta_file_exists",
-        exists_nonempty(FASTA),
-        str(FASTA),
-    )
+    add_check("master_file_exists", exists_nonempty(MASTER), str(MASTER))
+    add_check("fasta_file_exists", exists_nonempty(FASTA), str(FASTA))
 
     add_check(
         "master_row_count_equals_fasta_count",
@@ -640,7 +752,6 @@ def main():
         f"extra_in_master={len(extra_in_master)}",
     )
 
-    # Protein lengths
     length_mismatches = []
 
     for pid, row in master_by_id.items():
@@ -662,7 +773,6 @@ def main():
         f"mismatches={len(length_mismatches)}",
     )
 
-    # Representative lookup
     rep_to_gene, rep_to_isoform_count = load_representative_lookup(REP_LOOKUP)
     rep_mismatches = []
 
@@ -672,20 +782,10 @@ def main():
             expected_isoform_count = rep_to_isoform_count.get(pid, "1")
 
             if row.get("gene_id", "") != expected_gene:
-                rep_mismatches.append([
-                    pid,
-                    "gene_id",
-                    expected_gene,
-                    row.get("gene_id", ""),
-                ])
+                rep_mismatches.append([pid, "gene_id", expected_gene, row.get("gene_id", "")])
 
             if row.get("isoform_count", "") != expected_isoform_count:
-                rep_mismatches.append([
-                    pid,
-                    "isoform_count",
-                    expected_isoform_count,
-                    row.get("isoform_count", ""),
-                ])
+                rep_mismatches.append([pid, "isoform_count", expected_isoform_count, row.get("isoform_count", "")])
 
         write_mismatch_file(
             "representative_lookup_mismatches.tsv",
@@ -705,7 +805,6 @@ def main():
             f"missing_or_empty={REP_LOOKUP}",
         )
 
-    # Source files presence
     source_files = {
         "diamond_swissprot": DIAMOND_SWISSPROT,
         "diamond_trembl_cnidaria": DIAMOND_TREMBL_CNIDARIA,
@@ -723,13 +822,44 @@ def main():
             str(path),
         )
 
-    # DIAMOND and BLASTp
+    homology_threshold_mismatches = []
+
+    for source_name, source_path in [
+        ("diamond_swissprot", DIAMOND_SWISSPROT),
+        ("diamond_trembl_cnidaria", DIAMOND_TREMBL_CNIDARIA),
+        ("blastp_swissprot", BLASTP_SWISSPROT),
+        ("blastp_trembl_cnidaria", BLASTP_TREMBL_CNIDARIA),
+    ]:
+        homology_threshold_mismatches.extend(
+            scan_homology_file_for_evalue_failures(source_path, source_name)
+        )
+
+    write_mismatch_file(
+        "homology_evalue_threshold_mismatches.tsv",
+        homology_threshold_mismatches,
+        [
+            "source",
+            "line_number",
+            "protein_id",
+            "problem",
+            "observed_evalue",
+            "maximum_allowed_evalue",
+        ],
+    )
+
+    add_check(
+        "homology_hits_pass_evalue_threshold",
+        len(homology_threshold_mismatches) == 0,
+        f"mismatches={len(homology_threshold_mismatches)} threshold={HOMOLOGY_EVALUE_THRESHOLD}",
+    )
+
     diamond_swiss = load_top_hits(DIAMOND_SWISSPROT)
     diamond_trembl = load_top_hits(DIAMOND_TREMBL_CNIDARIA)
     blastp_swiss = load_top_hits(BLASTP_SWISSPROT)
     blastp_trembl = load_top_hits(BLASTP_TREMBL_CNIDARIA)
 
     homology_mismatches = []
+
     homology_mismatches.extend(
         compare_hit_source(
             master_by_id,
@@ -738,6 +868,7 @@ def main():
             "diamond_swissprot",
         )
     )
+
     homology_mismatches.extend(
         compare_hit_source(
             master_by_id,
@@ -746,6 +877,7 @@ def main():
             "diamond_trembl_cnidaria",
         )
     )
+
     homology_mismatches.extend(
         compare_hit_source(
             master_by_id,
@@ -754,6 +886,7 @@ def main():
             "blastp_swissprot",
         )
     )
+
     homology_mismatches.extend(
         compare_hit_source(
             master_by_id,
@@ -775,7 +908,6 @@ def main():
         f"mismatches={len(homology_mismatches)}",
     )
 
-    # InterProScan
     interpro = load_interproscan(INTERPROSCAN)
     interpro_mismatches = compare_interpro(master_by_id, interpro)
 
@@ -791,7 +923,6 @@ def main():
         f"mismatches={len(interpro_mismatches)}",
     )
 
-    # eggNOG
     eggnog = load_eggnog(EGGNOG)
     eggnog_mismatches = compare_eggnog(master_by_id, eggnog)
 
@@ -807,7 +938,6 @@ def main():
         f"mismatches={len(eggnog_mismatches)}",
     )
 
-    # SignalP
     signalp = load_signalp(SIGNALP)
     signalp_mismatches = compare_signalp(master_by_id, signalp)
 
@@ -823,7 +953,6 @@ def main():
         f"mismatches={len(signalp_mismatches)}",
     )
 
-    # Annotation hierarchy
     class_mismatches = []
 
     for pid, row in master_by_id.items():
@@ -845,7 +974,6 @@ def main():
         f"mismatches={len(class_mismatches)}",
     )
 
-    # Summary counts
     observed_class_counts = Counter(row["annotation_class"] for row in master_rows)
     summary_counts = parse_summary_counts(SUMMARY)
 
@@ -872,7 +1000,6 @@ def main():
         f"mismatches={len(summary_mismatches)}",
     )
 
-    # Coverage summary
     coverage_rows = []
 
     def yes_count(field):
@@ -900,8 +1027,8 @@ def main():
         ["source_field", "count_yes", "proportion", "percentage"],
     )
 
-    # Annotation class counts
     class_rows = []
+
     for annotation_class in ANNOTATION_CLASS_ORDER:
         count = observed_class_counts.get(annotation_class, 0)
         proportion = count / total if total else 0
@@ -913,13 +1040,13 @@ def main():
         ["annotation_class", "count", "proportion", "percentage"],
     )
 
-    # Final report
     with REPORT.open("w") as fh:
         fh.write("Master annotation QC report\n")
         fh.write("===========================\n\n")
         fh.write(f"Master table: {MASTER}\n")
         fh.write(f"Summary file: {SUMMARY}\n")
         fh.write(f"FASTA row universe: {FASTA}\n")
+        fh.write(f"Homology e-value threshold: {HOMOLOGY_EVALUE_THRESHOLD}\n")
         fh.write(f"Rows in master: {len(master_rows)}\n")
         fh.write(f"IDs in FASTA: {len(fasta_ids)}\n")
         fh.write(f"Failed checks: {failed_checks}\n\n")
@@ -927,26 +1054,31 @@ def main():
         fh.write("Checks\n")
         fh.write("------\n")
         fh.write("status\tcheck\tdetail\n")
+
         for line in report_lines:
             fh.write(line + "\n")
 
         fh.write("\nAnnotation class counts\n")
         fh.write("-----------------------\n")
         fh.write("annotation_class\tcount\tproportion\tpercentage\n")
+
         for row in class_rows:
             fh.write("\t".join(map(str, row)) + "\n")
 
         fh.write("\nSource coverage summary\n")
         fh.write("-----------------------\n")
         fh.write("source_field\tcount_yes\tproportion\tpercentage\n")
+
         for row in coverage_rows:
             fh.write("\t".join(map(str, row)) + "\n")
 
         fh.write("\nMismatch files\n")
         fh.write("--------------\n")
+
         for path in sorted(QC_DIR.glob("*mismatch*.tsv")):
             with path.open() as check_fh:
                 n_lines = sum(1 for _ in check_fh)
+
             n_records = max(0, n_lines - 1)
             fh.write(f"{path}\t{n_records} records\n")
 
@@ -961,6 +1093,14 @@ if __name__ == "__main__":
     main()
 PY
 
+python_status=$?
+
 echo
 echo "QC report:"
-cat "$REPORT"
+if [[ -f "$REPORT" ]]; then
+    cat "$REPORT"
+else
+    echo "QC report was not created: $REPORT"
+fi
+
+exit "$python_status"

@@ -16,6 +16,19 @@ ANNOTATION_CLASS_ORDER = [
 ]
 
 
+def parse_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def format_float(value, digits=4):
+    if value is None:
+        return ""
+    return f"{value:.{digits}f}"
+
+
 def read_fasta_ids(path):
     ids = []
     lengths = {}
@@ -43,13 +56,6 @@ def read_fasta_ids(path):
 
 
 def load_representative_lookup(path):
-    """
-    Expected columns:
-    gene_id
-    representative_mrna_id
-    representative_protein_length
-    isoform_count
-    """
     rep_to_gene = {}
     rep_to_isoform_count = {}
 
@@ -71,12 +77,18 @@ def load_representative_lookup(path):
     return rep_to_gene, rep_to_isoform_count
 
 
-def load_top_hit(path):
+def load_top_hit(path, evalue_threshold):
     """
-    DIAMOND / BLASTp top hit table.
+    DIAMOND / BLASTp top-hit table.
 
-    Expected outfmt 6 columns:
+    Expected preferred outfmt 6 columns:
+    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+
+    Legacy 12-column files are tolerated:
     qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
+
+    Only hits with e-value <= evalue_threshold are retained.
+    The first retained hit per query is used.
     """
     hits = {}
 
@@ -94,17 +106,50 @@ def load_top_hit(path):
                 continue
 
             qseqid = parts[0]
+            sseqid = parts[1]
+            pident = parts[2]
+            aln_length = parts[3]
+            evalue = parts[10]
+            bitscore = parts[11]
+            qlen = parts[12] if len(parts) > 12 else ""
+            slen = parts[13] if len(parts) > 13 else ""
 
-            # Keep the first hit encountered.
-            # This preserves the previous top-hit behaviour.
-            if qseqid not in hits:
-                hits[qseqid] = {
-                    "subject": parts[1],
-                    "pident": parts[2],
-                    "aln_length": parts[3],
-                    "evalue": parts[10],
-                    "bitscore": parts[11],
-                }
+            evalue_float = parse_float(evalue)
+
+            if evalue_float is None:
+                continue
+
+            if evalue_float > evalue_threshold:
+                continue
+
+            if qseqid in hits:
+                continue
+
+            aln_length_float = parse_float(aln_length)
+            qlen_float = parse_float(qlen)
+            slen_float = parse_float(slen)
+
+            query_coverage = None
+            subject_coverage = None
+
+            if aln_length_float is not None and qlen_float not in (None, 0):
+                query_coverage = aln_length_float / qlen_float
+
+            if aln_length_float is not None and slen_float not in (None, 0):
+                subject_coverage = aln_length_float / slen_float
+
+            hits[qseqid] = {
+                "subject": sseqid,
+                "pident": pident,
+                "aln_length": aln_length,
+                "evalue": evalue,
+                "bitscore": bitscore,
+                "qlen": qlen,
+                "slen": slen,
+                "query_coverage": format_float(query_coverage),
+                "subject_coverage": format_float(subject_coverage),
+                "evalue_pass": "yes",
+            }
 
     return hits
 
@@ -209,13 +254,6 @@ def detect_eggnog_header(path):
 
 
 def load_eggnog(path):
-    """
-    eggNOG-mapper annotations file.
-
-    The parser supports:
-    - standard eggNOG-mapper v2 header beginning with #query
-    - fallback positional parsing if the header is not detected
-    """
     data = {}
 
     if not path.exists():
@@ -285,15 +323,6 @@ def load_eggnog(path):
 
 
 def load_signalp(path):
-    """
-    Flexible SignalP 5 parser.
-
-    This does not try to reinterpret SignalP scores.
-    It only records:
-    - whether there is a SignalP result row for the protein
-    - whether the row appears to contain a positive signal peptide prediction
-    - the raw SignalP row for later checking
-    """
     data = {}
 
     if not path.exists():
@@ -336,18 +365,21 @@ def join_set(values):
     return "|".join(cleaned) if cleaned else ""
 
 
-def choose_hierarchical_annotation(row):
-    """
-    Fixed annotation hierarchy.
+def add_homology_fields(row, prefix, hit):
+    row[f"{prefix}_hit"] = "yes" if hit else "no"
+    row[f"{prefix}_subject"] = hit.get("subject", "")
+    row[f"{prefix}_pident"] = hit.get("pident", "")
+    row[f"{prefix}_aln_length"] = hit.get("aln_length", "")
+    row[f"{prefix}_evalue"] = hit.get("evalue", "")
+    row[f"{prefix}_bitscore"] = hit.get("bitscore", "")
+    row[f"{prefix}_qlen"] = hit.get("qlen", "")
+    row[f"{prefix}_slen"] = hit.get("slen", "")
+    row[f"{prefix}_query_coverage"] = hit.get("query_coverage", "")
+    row[f"{prefix}_subject_coverage"] = hit.get("subject_coverage", "")
+    row[f"{prefix}_evalue_pass"] = hit.get("evalue_pass", "no")
 
-    Order:
-    1. Swiss-Prot sequence similarity
-    2. Cnidaria-TrEMBL sequence similarity
-    3. InterProScan domain/family support
-    4. eggNOG orthology support
-    5. SignalP-only secretory candidate
-    6. no current annotation
-    """
+
+def choose_hierarchical_annotation(row):
     if row["diamond_swissprot_hit"] == "yes" or row["blastp_swissprot_hit"] == "yes":
         return "annotated_swissprot_supported"
 
@@ -366,7 +398,7 @@ def choose_hierarchical_annotation(row):
     return "function_dark_no_current_annotation"
 
 
-def write_summary(summary_path, fasta_path, rows, input_paths):
+def write_summary(summary_path, fasta_path, rows, input_paths, evalue_threshold):
     counts = defaultdict(int)
 
     for row in rows:
@@ -378,7 +410,8 @@ def write_summary(summary_path, fasta_path, rows, input_paths):
         fh.write("Master annotation test100 summary\n")
         fh.write("=================================\n\n")
         fh.write(f"Input FASTA: {fasta_path}\n")
-        fh.write(f"Rows written: {total_rows}\n\n")
+        fh.write(f"Rows written: {total_rows}\n")
+        fh.write(f"Homology e-value threshold: {evalue_threshold:g}\n\n")
 
         fh.write("Input files used:\n")
         for label, path in input_paths.items():
@@ -419,27 +452,34 @@ def main():
     )
 
     parser.add_argument(
+        "--homology-evalue-threshold",
+        type=float,
+        default=1e-5,
+        help="Maximum e-value allowed for DIAMOND/BLASTp hits used in classification.",
+    )
+
+    parser.add_argument(
         "--diamond-swissprot",
-        default="02_annotation/diamond/representative/equina_representative_vs_swissprot_all.diamond.top_hits.tsv",
-        help="Representative DIAMOND Swiss-Prot top hits.",
+        default="02_annotation/diamond/filtered/equina_test100_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv",
+        help="Filtered representative DIAMOND Swiss-Prot top hits.",
     )
 
     parser.add_argument(
         "--diamond-trembl-cnidaria",
-        default="02_annotation/diamond/representative/equina_representative_vs_trembl_cnidaria_selected.diamond.top_hits.tsv",
-        help="Representative DIAMOND Cnidaria-TrEMBL top hits.",
+        default="02_annotation/diamond/filtered/equina_test100_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv",
+        help="Filtered representative DIAMOND Cnidaria-TrEMBL top hits.",
     )
 
     parser.add_argument(
         "--blastp-swissprot",
-        default="02_annotation/blastp/representative/equina_representative_vs_swissprot_all.blastp.top_hits.tsv",
-        help="Representative BLASTp Swiss-Prot top hits.",
+        default="02_annotation/blastp/filtered/equina_test100_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv",
+        help="Filtered representative BLASTp Swiss-Prot best hits.",
     )
 
     parser.add_argument(
         "--blastp-trembl-cnidaria",
-        default="02_annotation/blastp/representative/equina_representative_vs_trembl_cnidaria_selected.blastp.top_hits.tsv",
-        help="Representative BLASTp Cnidaria-TrEMBL top hits.",
+        default="02_annotation/blastp/filtered/equina_test100_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv",
+        help="Filtered representative BLASTp Cnidaria-TrEMBL best hits.",
     )
 
     parser.add_argument(
@@ -490,138 +530,150 @@ def main():
 
     rep_to_gene, rep_to_isoform_count = load_representative_lookup(Path(args.rep_lookup))
 
-    diamond_swissprot = load_top_hit(Path(args.diamond_swissprot))
-    diamond_trembl_cnidaria = load_top_hit(Path(args.diamond_trembl_cnidaria))
+    diamond_swissprot = load_top_hit(
+        Path(args.diamond_swissprot),
+        args.homology_evalue_threshold,
+    )
+    diamond_trembl_cnidaria = load_top_hit(
+        Path(args.diamond_trembl_cnidaria),
+        args.homology_evalue_threshold,
+    )
 
-    blastp_swissprot = load_top_hit(Path(args.blastp_swissprot))
-    blastp_trembl_cnidaria = load_top_hit(Path(args.blastp_trembl_cnidaria))
+    blastp_swissprot = load_top_hit(
+        Path(args.blastp_swissprot),
+        args.homology_evalue_threshold,
+    )
+    blastp_trembl_cnidaria = load_top_hit(
+        Path(args.blastp_trembl_cnidaria),
+        args.homology_evalue_threshold,
+    )
 
     interproscan = load_interproscan(Path(args.interproscan))
     eggnog = load_eggnog(Path(args.eggnog))
     signalp = load_signalp(Path(args.signalp))
+
+    homology_suffixes = [
+        "hit",
+        "subject",
+        "pident",
+        "aln_length",
+        "evalue",
+        "bitscore",
+        "qlen",
+        "slen",
+        "query_coverage",
+        "subject_coverage",
+        "evalue_pass",
+    ]
 
     columns = [
         "protein_id",
         "gene_id",
         "protein_length",
         "isoform_count",
-        "diamond_swissprot_hit",
-        "diamond_swissprot_subject",
-        "diamond_swissprot_pident",
-        "diamond_swissprot_evalue",
-        "diamond_swissprot_bitscore",
-        "blastp_swissprot_hit",
-        "blastp_swissprot_subject",
-        "blastp_swissprot_pident",
-        "blastp_swissprot_evalue",
-        "blastp_swissprot_bitscore",
-        "diamond_trembl_cnidaria_hit",
-        "diamond_trembl_cnidaria_subject",
-        "diamond_trembl_cnidaria_pident",
-        "diamond_trembl_cnidaria_evalue",
-        "diamond_trembl_cnidaria_bitscore",
-        "blastp_trembl_cnidaria_hit",
-        "blastp_trembl_cnidaria_subject",
-        "blastp_trembl_cnidaria_pident",
-        "blastp_trembl_cnidaria_evalue",
-        "blastp_trembl_cnidaria_bitscore",
-        "interpro_hit",
-        "interpro_member_databases",
-        "interpro_signature_accessions",
-        "interpro_accessions",
-        "interpro_descriptions",
-        "go_terms_interpro",
-        "pathways_interpro",
-        "eggnog_hit",
-        "eggnog_seed_ortholog",
-        "eggnog_evalue",
-        "eggnog_score",
-        "eggnog_ogs",
-        "eggnog_max_annot_lvl",
-        "eggnog_cog_category",
-        "eggnog_description",
-        "eggnog_preferred_name",
-        "go_terms_eggnog",
-        "eggnog_ec",
-        "eggnog_kegg_ko",
-        "eggnog_kegg_pathway",
-        "eggnog_pfam",
-        "signalp_result_present",
-        "signalp_positive",
-        "signalp_raw",
-        "annotation_class",
     ]
+
+    for prefix in [
+        "diamond_swissprot",
+        "blastp_swissprot",
+        "diamond_trembl_cnidaria",
+        "blastp_trembl_cnidaria",
+    ]:
+        columns.extend([f"{prefix}_{suffix}" for suffix in homology_suffixes])
+
+    columns.extend(
+        [
+            "interpro_hit",
+            "interpro_member_databases",
+            "interpro_signature_accessions",
+            "interpro_accessions",
+            "interpro_descriptions",
+            "go_terms_interpro",
+            "pathways_interpro",
+            "eggnog_hit",
+            "eggnog_seed_ortholog",
+            "eggnog_evalue",
+            "eggnog_score",
+            "eggnog_ogs",
+            "eggnog_max_annot_lvl",
+            "eggnog_cog_category",
+            "eggnog_description",
+            "eggnog_preferred_name",
+            "go_terms_eggnog",
+            "eggnog_ec",
+            "eggnog_kegg_ko",
+            "eggnog_kegg_pathway",
+            "eggnog_pfam",
+            "signalp_result_present",
+            "signalp_positive",
+            "signalp_raw",
+            "annotation_class",
+        ]
+    )
 
     rows = []
 
     for protein_id in protein_ids:
-        diamond_swissprot_hit = diamond_swissprot.get(protein_id, {})
-        diamond_trembl_cnidaria_hit = diamond_trembl_cnidaria.get(protein_id, {})
-
-        blastp_swissprot_hit = blastp_swissprot.get(protein_id, {})
-        blastp_trembl_cnidaria_hit = blastp_trembl_cnidaria.get(protein_id, {})
-
-        interpro_record = interproscan.get(protein_id, {})
-        eggnog_record = eggnog.get(protein_id, {})
-        signalp_record = signalp.get(protein_id, {})
-
         row = {
             "protein_id": protein_id,
             "gene_id": rep_to_gene.get(protein_id, protein_id),
             "protein_length": protein_lengths.get(protein_id, ""),
             "isoform_count": rep_to_isoform_count.get(protein_id, "1"),
-
-            "diamond_swissprot_hit": "yes" if diamond_swissprot_hit else "no",
-            "diamond_swissprot_subject": diamond_swissprot_hit.get("subject", ""),
-            "diamond_swissprot_pident": diamond_swissprot_hit.get("pident", ""),
-            "diamond_swissprot_evalue": diamond_swissprot_hit.get("evalue", ""),
-            "diamond_swissprot_bitscore": diamond_swissprot_hit.get("bitscore", ""),
-
-            "blastp_swissprot_hit": "yes" if blastp_swissprot_hit else "no",
-            "blastp_swissprot_subject": blastp_swissprot_hit.get("subject", ""),
-            "blastp_swissprot_pident": blastp_swissprot_hit.get("pident", ""),
-            "blastp_swissprot_evalue": blastp_swissprot_hit.get("evalue", ""),
-            "blastp_swissprot_bitscore": blastp_swissprot_hit.get("bitscore", ""),
-
-            "diamond_trembl_cnidaria_hit": "yes" if diamond_trembl_cnidaria_hit else "no",
-            "diamond_trembl_cnidaria_subject": diamond_trembl_cnidaria_hit.get("subject", ""),
-            "diamond_trembl_cnidaria_pident": diamond_trembl_cnidaria_hit.get("pident", ""),
-            "diamond_trembl_cnidaria_evalue": diamond_trembl_cnidaria_hit.get("evalue", ""),
-            "diamond_trembl_cnidaria_bitscore": diamond_trembl_cnidaria_hit.get("bitscore", ""),
-
-            "blastp_trembl_cnidaria_hit": "yes" if blastp_trembl_cnidaria_hit else "no",
-            "blastp_trembl_cnidaria_subject": blastp_trembl_cnidaria_hit.get("subject", ""),
-            "blastp_trembl_cnidaria_pident": blastp_trembl_cnidaria_hit.get("pident", ""),
-            "blastp_trembl_cnidaria_evalue": blastp_trembl_cnidaria_hit.get("evalue", ""),
-            "blastp_trembl_cnidaria_bitscore": blastp_trembl_cnidaria_hit.get("bitscore", ""),
-
-            "interpro_hit": interpro_record.get("interpro_hit", "no"),
-            "interpro_member_databases": join_set(interpro_record.get("member_databases", set())),
-            "interpro_signature_accessions": join_set(interpro_record.get("signature_accessions", set())),
-            "interpro_accessions": join_set(interpro_record.get("interpro_accessions", set())),
-            "interpro_descriptions": join_set(interpro_record.get("interpro_descriptions", set())),
-            "go_terms_interpro": join_set(interpro_record.get("go_terms_interpro", set())),
-            "pathways_interpro": join_set(interpro_record.get("pathways_interpro", set())),
-
-            "eggnog_hit": eggnog_record.get("eggnog_hit", "no"),
-            "eggnog_seed_ortholog": eggnog_record.get("eggnog_seed_ortholog", ""),
-            "eggnog_evalue": eggnog_record.get("eggnog_evalue", ""),
-            "eggnog_score": eggnog_record.get("eggnog_score", ""),
-            "eggnog_ogs": eggnog_record.get("eggnog_ogs", ""),
-            "eggnog_max_annot_lvl": eggnog_record.get("eggnog_max_annot_lvl", ""),
-            "eggnog_cog_category": eggnog_record.get("eggnog_cog_category", ""),
-            "eggnog_description": eggnog_record.get("eggnog_description", ""),
-            "eggnog_preferred_name": eggnog_record.get("eggnog_preferred_name", ""),
-            "go_terms_eggnog": eggnog_record.get("go_terms_eggnog", ""),
-            "eggnog_ec": eggnog_record.get("eggnog_ec", ""),
-            "eggnog_kegg_ko": eggnog_record.get("eggnog_kegg_ko", ""),
-            "eggnog_kegg_pathway": eggnog_record.get("eggnog_kegg_pathway", ""),
-            "eggnog_pfam": eggnog_record.get("eggnog_pfam", ""),
-
-            "signalp_result_present": signalp_record.get("signalp_result_present", "no"),
-            "signalp_positive": signalp_record.get("signalp_positive", "no"),
-            "signalp_raw": signalp_record.get("signalp_raw", ""),
         }
+
+        add_homology_fields(
+            row,
+            "diamond_swissprot",
+            diamond_swissprot.get(protein_id, {}),
+        )
+        add_homology_fields(
+            row,
+            "blastp_swissprot",
+            blastp_swissprot.get(protein_id, {}),
+        )
+        add_homology_fields(
+            row,
+            "diamond_trembl_cnidaria",
+            diamond_trembl_cnidaria.get(protein_id, {}),
+        )
+        add_homology_fields(
+            row,
+            "blastp_trembl_cnidaria",
+            blastp_trembl_cnidaria.get(protein_id, {}),
+        )
+
+        interpro_record = interproscan.get(protein_id, {})
+        eggnog_record = eggnog.get(protein_id, {})
+        signalp_record = signalp.get(protein_id, {})
+
+        row.update(
+            {
+                "interpro_hit": interpro_record.get("interpro_hit", "no"),
+                "interpro_member_databases": join_set(interpro_record.get("member_databases", set())),
+                "interpro_signature_accessions": join_set(interpro_record.get("signature_accessions", set())),
+                "interpro_accessions": join_set(interpro_record.get("interpro_accessions", set())),
+                "interpro_descriptions": join_set(interpro_record.get("interpro_descriptions", set())),
+                "go_terms_interpro": join_set(interpro_record.get("go_terms_interpro", set())),
+                "pathways_interpro": join_set(interpro_record.get("pathways_interpro", set())),
+                "eggnog_hit": eggnog_record.get("eggnog_hit", "no"),
+                "eggnog_seed_ortholog": eggnog_record.get("eggnog_seed_ortholog", ""),
+                "eggnog_evalue": eggnog_record.get("eggnog_evalue", ""),
+                "eggnog_score": eggnog_record.get("eggnog_score", ""),
+                "eggnog_ogs": eggnog_record.get("eggnog_ogs", ""),
+                "eggnog_max_annot_lvl": eggnog_record.get("eggnog_max_annot_lvl", ""),
+                "eggnog_cog_category": eggnog_record.get("eggnog_cog_category", ""),
+                "eggnog_description": eggnog_record.get("eggnog_description", ""),
+                "eggnog_preferred_name": eggnog_record.get("eggnog_preferred_name", ""),
+                "go_terms_eggnog": eggnog_record.get("go_terms_eggnog", ""),
+                "eggnog_ec": eggnog_record.get("eggnog_ec", ""),
+                "eggnog_kegg_ko": eggnog_record.get("eggnog_kegg_ko", ""),
+                "eggnog_kegg_pathway": eggnog_record.get("eggnog_kegg_pathway", ""),
+                "eggnog_pfam": eggnog_record.get("eggnog_pfam", ""),
+                "signalp_result_present": signalp_record.get("signalp_result_present", "no"),
+                "signalp_positive": signalp_record.get("signalp_positive", "no"),
+                "signalp_raw": signalp_record.get("signalp_raw", ""),
+            }
+        )
 
         row["annotation_class"] = choose_hierarchical_annotation(row)
         rows.append(row)
@@ -632,7 +684,13 @@ def main():
         writer.writerows(rows)
 
     summary_path = output_path.with_suffix(".summary.txt")
-    write_summary(summary_path, fasta_path, rows, input_paths)
+    write_summary(
+        summary_path,
+        fasta_path,
+        rows,
+        input_paths,
+        args.homology_evalue_threshold,
+    )
 
     print(f"Wrote master table: {output_path}")
     print(f"Rows written: {len(rows)}")
