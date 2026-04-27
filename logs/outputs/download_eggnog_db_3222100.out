@@ -1,0 +1,25 @@
+Using eggNOG-mapper:
+/uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13/bin/emapper.py
+[31mThere was an error retrieving eggnog-mapper DB data: not a valid file "/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data/eggnog.db"[0m
+[0mMaybe you need to run download_eggnog_data.py[0m
+emapper-2.1.13 / Expected eggNOG DB version: 5.0.2 / Installed eggNOG DB version: unknown / Diamond version found: diamond version 2.0.15 / MMseqs2 version found: 16.747c6 / Compatible novel families DB version: 1.0.1
+Using database downloader:
+/uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13/bin/download_eggnog_data.py
+Downloading eggNOG database to:
+/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data
+[32mDownloading "eggnog.db" at /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data...[0m
+[36mcd /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data && wget -nH --user-agent=Mozilla/5.0 --relative --no-parent --reject "index.html*" --cut-dirs=4 -e robots=off -O eggnog.db.gz http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog.db.gz && echo Decompressing... && gunzip eggnog.db.gz [0m
+[32mDownloading "eggnog.taxa.db" at /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data...[0m
+[36mcd /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data && wget -nH --user-agent=Mozilla/5.0 --relative --no-parent --reject "index.html*" --cut-dirs=4 -e robots=off -O eggnog.taxa.tar.gz http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog.taxa.tar.gz && echo Decompressing... && tar -zxf eggnog.taxa.tar.gz && rm eggnog.taxa.tar.gz[0m
+[32mDownloading fasta files " at /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data...[0m
+[36mcd /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data && wget -nH --user-agent=Mozilla/5.0 --relative --no-parent --reject "index.html*" --cut-dirs=4 -e robots=off -O eggnog_proteins.dmnd.gz http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog_proteins.dmnd.gz && echo Decompressing... && gunzip eggnog_proteins.dmnd.gz [0m
+[1;34mSkipping novel families diamond and annotation databases (or already present). Use -F and -f to force download[0m
+[1;34mSkipping Pfam database (or already present). Use -P and -f to force download[0m
+[1;34mSkipping MMseqs2 database (or already present). Use -M and -f to force download[0m
+[1;34mNo HMMER database requested. Use "-H -d taxid" to download the hmmer database for taxid[0m
+[32mFinished.[0m
+Download complete.
+512	/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data
+eggnog.db.gz	0 bytes
+eggnog_proteins.dmnd.gz	0 bytes
+eggnog.taxa.tar.gz	0 bytes

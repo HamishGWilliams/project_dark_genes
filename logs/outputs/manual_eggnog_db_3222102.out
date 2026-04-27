@@ -1,0 +1,30 @@
+Started: Sun Apr 26 13:09:58 BST 2026
+Working directory: /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data
+Database source: http://eggnog5.embl.de/download/emapperdb-5.0.2
+Filesystem      Size  Used Avail Use% Mounted on
+beegfs_nodev    1.1P  690T  358T  66% /uoa
+Filesystem     Inodes IUsed IFree IUse% Mounted on
+beegfs_nodev        0     0     0     - /uoa
+Removing failed/partial previous downloads...
+Checking remote files exist...
+Downloading eggnog.db.gz...
+-rw-r--r-- 1 r02hw22 UG Science 6.4G Mar  2  2021 eggnog.db.gz
+Decompressing eggnog.db.gz...
+-rw-r--r-- 1 r02hw22 UG Science 39G Mar  2  2021 eggnog.db
+Downloading eggnog.taxa.tar.gz...
+-rw-r--r-- 1 r02hw22 UG Science 70M Mar  2  2021 eggnog.taxa.tar.gz
+Extracting eggnog.taxa.tar.gz...
+-rw-r--r-- 1 r02hw22 UG Science 266M Nov 11  2020 eggnog.taxa.db
+Downloading eggnog_proteins.dmnd.gz...
+-rw-r--r-- 1 r02hw22 UG Science 4.9G Mar  2  2021 eggnog_proteins.dmnd.gz
+Decompressing eggnog_proteins.dmnd.gz...
+-rw-r--r-- 1 r02hw22 UG Science 8.7G Mar  2  2021 eggnog_proteins.dmnd
+Final database directory:
+total 48G
+-rw-r--r-- 1 r02hw22 UG Science  39G Mar  2  2021 eggnog.db
+-rw-r--r-- 1 r02hw22 UG Science 8.7G Mar  2  2021 eggnog_proteins.dmnd
+-rw-r--r-- 1 r02hw22 UG Science 266M Nov 11  2020 eggnog.taxa.db
+-rw-r--r-- 1 r02hw22 UG Science 6.4M Nov 11  2020 eggnog.taxa.db.traverse.pkl
+48G	/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data
+Verifying eggNOG-mapper database recognition...
+emapper-2.1.13-5721bb4 / Expected eggNOG DB version: 5.0.2 / Installed eggNOG DB version: 5.0.2 / Diamond version found: diamond version 2.0.15 / MMseqs2 version found: 16.747c6 / Compatible novel families DB version: 1.0.1

@@ -1,0 +1,167 @@
+# 1. Prepare directories
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+mkdir -p 02_annotation/input
+mkdir -p 02_annotation/eggnog/{raw,summary,test_input,tmp}
+mkdir -p 02_annotation/eggnog/db
+
+## add more files/directories to ignore that will be too large
+cat >> .gitignore <<'EOF'
+
+# eggNOG-mapper databases, raw outputs, and temporary files
+02_annotation/eggnog/db/
+02_annotation/eggnog/raw/
+02_annotation/eggnog/tmp/
+02_annotation/eggnog/test_input/
+*.emapper.*
+EOF
+
+
+2. Package install/load
+Package is not available, spider or keyworded
+
+# Install
+Check avaiable packages for installing
+
+module avail conda
+----------------------------- /opt/software/uoa/modules/sys ------------------------------
+   anaconda3/latest  (D)    conda/condaforge        miniconda3/latest (D)
+   anaconda3/2021.05        conda/mamba             miniconda3/4.12.0
+   conda/anaconda3          conda/miniconda3 (D)
+
+
+## load miniconda
+module load miniconda3/latest
+
+## conda version
+conda 26.1.1
+
+## Install with Conda
+conda create -n eggnog-mapper -c conda-forge -c bioconda eggnog-mapper -y
+conda activate eggnog-mapper
+
+### Check
+which emapper.py
+which download_eggnog_data.py
+
+emapper.py --version
+download_eggnog_data.py --help | head
+
+# FAILED --------------------------------------
+
+# DIAGNOSING -----------------------------------
+
+# It was an issue with the URL we were fetching eggnog from
+## wrote new download: manual_download_eggnog_data.sh
+
+## confirm using correct URL:
+grep -n "BASE=\|eggnogdb.embl.de\|eggnog5.embl.de\|download_eggnog_data.py" \
+  scripts/manual_download_eggnog_data.sh
+
+	# BASE="http://eggnog5.embl.de/download/emapperdb-5.0.2"
+
+## remove old files
+rm -f /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data/eggnog.db*
+rm -f /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data/eggnog_proteins.dmnd*
+rm -f /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data/eggnog.taxa*
+
+# submit corrected script:
+sbatch scripts/manual_download_eggnog_data.sh
+
+
+# RUNNING EGGNOG-MAPPER -------------------------------------------
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+export EGGNOG_DATA_DIR="/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data"
+export EGGNOG_ENV="/uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13"
+export PATH="$EGGNOG_ENV/bin:$PATH"
+
+which emapper.py
+emapper.py --version
+
+## check
+ls -lh 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+grep -c '^>' 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+
+## make 100-protein eggNOG test FASTA
+mkdir -p 02_annotation/eggnog/test_input
+
+python3 - <<'PY'
+from pathlib import Path
+
+inp = Path("02_annotation/input/equina_representative_longest_per_gene.no_stop.fa")
+out = Path("02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa")
+
+n = 0
+write = False
+
+with inp.open() as fin, out.open("w") as fout:
+    for line in fin:
+        if line.startswith(">"):
+            n += 1
+            write = n <= 100
+        if write:
+            fout.write(line)
+
+print(f"Wrote {min(n, 100)} proteins to {out}")
+PY
+
+# good?
+grep -c '^>' 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa
+# no stops?
+grep -v '^>' 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa | grep '\*'
+
+
+# Make run_eggnog_mapper.sh - COMPLETE
+
+# executable
+chmod +x scripts/run_eggnog_mapper.sh
+
+# submit
+sbatch \
+  --job-name=eggnog_test100 \
+  --export=ALL,QUERY=02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa,RUN_NAME=equina_representative_test100,EGGNOG_DATA_DIR=/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data \
+  scripts/run_eggnog_mapper.sh
+
+# COMPLETED TEST!! ---------------------------
+
+# Count annotation coverage:
+TOTAL=$(grep -c '^>' 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa)
+ANNOTATED=$(wc -l < 02_annotation/eggnog/summary/equina_representative_test100.annotated_query_ids.txt)
+
+echo "Test proteins: $TOTAL"
+	# 100
+echo "Proteins with eggNOG annotation rows: $ANNOTATED"
+	# 68
+
+awk -v a="$ANNOTATED" -v t="$TOTAL" 'BEGIN {printf "eggNOG test annotation coverage: %.2f%%\n", (a/t)*100}'
+	# 68.00%
+
+# functional summaries
+cat 02_annotation/eggnog/summary/equina_representative_test100.cog_category_counts.txt
+
+      20 S
+      9 T
+      4 O
+      4 K
+      3 L
+      3 J
+      3 C
+      2 Q
+      2 E
+      2 A
+      1 Z
+      1 W
+      1 V
+      1 U
+      1 P
+      1 I
+      1 G
+      1 F
+      1 D
+      1 B
+
+# Run full eggNOG-mapper ---------------------------------
+sbatch \
+  --job-name=eggnog_rep_full \
+  --export=ALL,QUERY=02_annotation/input/equina_representative_longest_per_gene.no_stop.fa,RUN_NAME=equina_representative_full,EGGNOG_DATA_DIR=/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data \
+  scripts/run_eggnog_mapper.sh

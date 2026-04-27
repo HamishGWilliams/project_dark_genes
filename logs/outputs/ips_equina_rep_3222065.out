@@ -17,3 +17,41 @@ Python 3.9.12
 [AntiFam-8.0,CDD-3.21,Coils-2.2.1,FunFam-4.3.0,Gene3D-4.3.0,Hamap-2025_01,MobiDBLite-4.0,NCBIfam-18.0,PANTHER-19.0,Pfam-38.1,PIRSF-3.10,PIRSR-2025_05,PRINTS-42.0,ProSitePatterns-2025_01,ProSiteProfiles-2025_01,SFLD-4,SMART-9.0,SUPERFAMILY-1.75]
 Pre-calculated match lookup service DISABLED.  Please wait for match calculations to complete...
 26/04/2026 11:44:27:669 Uploaded 46971 unique sequences for analysis
+26/04/2026 18:24:03:082 25% completed
+26/04/2026 19:24:03:277 26% completed
+26/04/2026 20:24:03:321 27% completed
+26/04/2026 21:24:03:564 31% completed
+26/04/2026 22:24:04:149 49% completed
+26/04/2026 23:24:04:703 93% completed
+27/04/2026 00:24:05:094 94% completed
+27/04/2026 01:24:05:138 95% completed
+27/04/2026 02:24:05:466 96% completed
+27/04/2026 03:24:05:966 96% completed
+27/04/2026 04:24:06:437 98% completed
+27/04/2026 05:24:06:824 99% completed
+27/04/2026 06:08:56:810 100% done:  InterProScan analyses completed 
+
+InterProScan finished.
+Summarising TSV: 02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan.tsv
+Raw TSV rows:
+485518 02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan.tsv
+Proteins with at least one InterProScan match:
+40933 02_annotation/interproscan/summary/equina_representative_longest_per_gene.interproscan_matched_protein_ids.txt
+Top member databases:
+  97488 MobiDBLite
+  57863 Pfam
+  56077 Gene3D
+  47063 SMART
+  44567 SUPERFAMILY
+  42209 ProSiteProfiles
+  34537 PRINTS
+  28830 PANTHER
+  20469 CDD
+  17967 Coils
+Summary files:
+-rw-r--r-- 1 r02hw22 UG Science 3.5M Apr 27 06:09 02_annotation/interproscan/summary/equina_representative_longest_per_gene.go_terms.tsv
+-rw-r--r-- 1 r02hw22 UG Science  29M Apr 27 06:09 02_annotation/interproscan/summary/equina_representative_longest_per_gene.interpro_domain_summary.tsv
+-rw-r--r-- 1 r02hw22 UG Science 615K Apr 27 06:09 02_annotation/interproscan/summary/equina_representative_longest_per_gene.interproscan_matched_protein_ids.txt
+-rw-r--r-- 1 r02hw22 UG Science  274 Apr 27 06:09 02_annotation/interproscan/summary/equina_representative_longest_per_gene.member_database_counts.txt
+-rw-r--r-- 1 r02hw22 UG Science 789M Apr 27 06:27 02_annotation/interproscan/summary/equina_representative_longest_per_gene.pathways.tsv
+Done.

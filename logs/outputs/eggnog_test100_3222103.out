@@ -1,0 +1,63 @@
+========================================
+Project dir      : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+Query FASTA      : 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa
+Run name         : equina_representative_test100
+Threads          : 16
+eggNOG env       : /uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13
+eggNOG data dir  : /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data
+Output directory : 02_annotation/eggnog/raw
+Temp directory   : /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_tmp_3222103
+========================================
+/uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13/bin/emapper.py
+emapper-2.1.13-5721bb4 / Expected eggNOG DB version: 5.0.2 / Installed eggNOG DB version: 5.0.2 / Diamond version found: diamond version 2.0.15 / MMseqs2 version found: 16.747c6 / Compatible novel families DB version: 1.0.1
+#  emapper-2.1.13-5721bb4
+# emapper.py  -i 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa --itype proteins -m diamond --data_dir /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data --cpu 16 --output equina_representative_test100 --output_dir 02_annotation/eggnog/raw --temp_dir /uoa/scratch/users/r02hw22/project_dark_genes/eggnog_tmp_3222103 --override
+[1;33m  /uoa/scratch/users/r02hw22/project_dark_genes/conda_envs/eggnog-mapper-2.1.13/bin/diamond blastp -d '/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_data/eggnog_proteins.dmnd' -q '/uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa' --threads 16 -o '/uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/eggnog/raw/equina_representative_test100.emapper.hits' --tmpdir '/uoa/scratch/users/r02hw22/project_dark_genes/eggnog_tmp_3222103/emappertmp_dmdn_ld0t2z7w' --sensitive --iterate -e 0.001 --top 3  --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp scovhsp[0m
+[32mDone[0m
+[1;33mResult files:[0m
+   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/eggnog/raw/equina_representative_test100.emapper.hits
+   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/eggnog/raw/equina_representative_test100.emapper.seed_orthologs
+   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations
+
+================================================================================
+CITATION:
+If you use this software, please cite:
+
+[1] eggNOG-mapper v2: functional annotation, orthology assignments, and domain 
+      prediction at the metagenomic scale. Carlos P. Cantalapiedra, 
+      Ana Hernandez-Plaza, Ivica Letunic, Peer Bork, Jaime Huerta-Cepas. 2021.
+      Molecular Biology and Evolution, msab293, https://doi.org/10.1093/molbev/msab293
+
+[2] eggNOG 5.0: a hierarchical, functionally and phylogenetically annotated
+      orthology resource based on 5090 organisms and 2502 viruses. Jaime
+      Huerta-Cepas, Damian Szklarczyk, Davide Heller, Ana Hernandez-Plaza,
+      Sofia K Forslund, Helen Cook, Daniel R Mende, Ivica Letunic, Thomas
+      Rattei, Lars J Jensen, Christian von Mering and Peer Bork. Nucleic Acids
+      Research, Volume 47, Issue D1, 8 January 2019, Pages D309-D314,
+      https://doi.org/10.1093/nar/gky1085 
+
+[3] Sensitive protein alignments at tree-of-life scale using DIAMOND.
+       Buchfink B, Reuter K, Drost HG. 2021.
+       Nature Methods 18, 366–368 (2021). https://doi.org/10.1038/s41592-021-01101-x
+
+e.g. Functional annotation was performed using eggNOG-mapper (version emapper-2.1.13-5721bb4) [1]
+ based on eggNOG orthology data [2]. Sequence searches were performed using [3].
+
+================================================================================
+
+Total hits processed: 68
+Total time: 265 secs
+FINISHED
+eggNOG-mapper completed successfully.
+Raw output files:
+-rw-r--r-- 1 r02hw22 UG Science  74K Apr 26 13:34 02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations
+-rw-r--r-- 1 r02hw22 UG Science 7.3K Apr 26 13:33 02_annotation/eggnog/raw/equina_representative_test100.emapper.hits
+-rw-r--r-- 1 r02hw22 UG Science 6.2K Apr 26 13:33 02_annotation/eggnog/raw/equina_representative_test100.emapper.seed_orthologs
+Annotation rows excluding comments:
+68
+Summary files:
+-rw-r--r-- 1 r02hw22 UG Science  823 Apr 26 13:34 02_annotation/eggnog/summary/equina_representative_test100.annotated_query_ids.txt
+-rw-r--r-- 1 r02hw22 UG Science  73K Apr 26 13:34 02_annotation/eggnog/summary/equina_representative_test100.annotations.no_comments.tsv
+-rw-r--r-- 1 r02hw22 UG Science  200 Apr 26 13:34 02_annotation/eggnog/summary/equina_representative_test100.cog_category_counts.txt
+-rw-r--r-- 1 r02hw22 UG Science 113K Apr 26 13:34 02_annotation/eggnog/summary/equina_representative_test100.go_terms.tsv
+Done.

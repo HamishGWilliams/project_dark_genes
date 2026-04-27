@@ -1,0 +1,7 @@
+annotation_class	count	proportion	percentage
+annotated_swissprot_supported	42	0.4200	42.00%
+sequence_supported_trembl_cnidaria	42	0.4200	42.00%
+domain_supported_interpro	10	0.1000	10.00%
+orthology_supported_eggnog	0	0.0000	0.00%
+function_dark_but_signalp_secretory_candidate	0	0.0000	0.00%
+function_dark_no_current_annotation	6	0.0600	6.00%

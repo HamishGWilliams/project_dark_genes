@@ -1,0 +1,52 @@
+========================================
+Project dir : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+Query FASTA : 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+Run name    : equina_representative_full
+Output dir  : 02_annotation/signalp/raw/equina_representative_full
+Summary dir : 02_annotation/signalp/summary
+Loaded modules:
+SignalP path:
+/opt/software/uoa/apps/signalp/5.0b/bin/signalp
+========================================
+Usage of signalp:
+  -batch int
+    	Number of sequences that the tool will run simultaneously. Decrease or increase size depending on your system memory. (default 10000)
+  -fasta string
+    	Input file in fasta format.
+  -format string
+    	Output format. 'long' for generating the predictions with plots, 'short' for the predictions without plots. (default "short")
+  -gff3
+    	Make gff3 file of processed sequences.
+  -mature
+    	Make fasta file with mature sequence.
+  -org string
+    	Organism. Archaea: 'arch', Gram-positive: 'gram+', Gram-negative: 'gram-' or Eukarya: 'euk' (default "euk")
+  -plot string
+    	Plots output format. When long output selected, choose between 'png', 'eps' or 'none' to get just a tabular file. (default "png")
+  -prefix string
+    	Output files prefix. (default "Input file prefix")
+  -stdout
+    	Write the prediction summary to the STDOUT.
+  -tmp string
+    	Specify temporary file directory. (default "System default tmpdir")
+  -verbose
+    	Verbose output. Specify '-verbose=false' to avoid printing. (default true)
+  -version
+    	Prints version.
+SignalP-5.0. Starting fasta file reading...
+Total proteins read: 47671.
+Organism: euk.
+Starting protein prediction...
+Temporary directory: /tmp/signalp5.102777089
+Protein prediction done!
+Generating output files...
+Completed.
+SignalP command finished.
+Raw output files:
+02_annotation/signalp/raw/equina_representative_full/equina_representative_full_summary.signalp5
+-rw-r--r-- 1 r02hw22 UG Science 2.1M Apr 26 14:13 02_annotation/signalp/raw/equina_representative_full/equina_representative_full_summary.signalp5
+Detected SignalP 5 summary file: 02_annotation/signalp/raw/equina_representative_full/equina_representative_full_summary.signalp5
+Summary files:
+-rw-r--r-- 1 r02hw22 UG Science 374K Apr 26 14:13 02_annotation/signalp/summary/equina_representative_full.signalp5_positive_predictions.tsv
+-rw-r--r-- 1 r02hw22 UG Science 2.1M Apr 26 14:13 02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv
+Done.

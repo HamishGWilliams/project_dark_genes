@@ -1,0 +1,60 @@
+========================================
+Running BLASTp for: Swiss-Prot
+Reference FASTA: 02_annotation/reference_dbs/swissprot_all.fasta
+BLAST DB:        02_annotation/db/swissprot_all_blast
+Raw top 10 TSV:  02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw_representative.tsv
+Best hit TSV:    02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv
+Threads:         8
+Top N:           10
+========================================
+
+
+Building a new DB, current time: 04/26/2026 11:58:23
+New DB name:   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/db/swissprot_all_blast
+New DB title:  02_annotation/reference_dbs/swissprot_all.fasta
+Sequence type: Protein
+Deleted existing Protein BLAST database named /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/db/swissprot_all_blast
+Keep MBits: T
+Maximum file size: 3000000000B
+Adding sequences from FASTA; added 574627 sequences in 22.2617 seconds.
+
+
+
+Line counts for Swiss-Prot:
+  393849 02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw_representative.tsv
+   46647 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv
+  440496 total
+
+First few best hits for Swiss-Prot:
+evm.utg4.1	sp|Q23858|CALR_DICDI	42.105	38	21	1	1	38	1	37	2.2	29.6
+evm.utg4.3	sp|O42412|IOD3_CHICK	43.373	166	92	2	78	242	79	243	1.94e-44	153
+evm.utg4.4	sp|O42412|IOD3_CHICK	44.792	192	102	2	58	248	59	247	2.73e-52	173
+evm.utg4.5	sp|Q23858|CALR_DICDI	42.105	38	21	1	1	38	1	37	2.3	29.6
+evm.utg4.6	sp|Q9CAA7|PUB42_ARATH	26.316	57	42	0	12	68	824	880	0.94	32.7
+evm.utg4.7	sp|Q07175|VKGC_BOVIN	50.794	567	240	8	1	562	75	607	0.0	583
+evm.utg4.8	sp|Q01664|TFAP4_HUMAN	54.098	183	52	5	29	209	37	189	1.04e-46	162
+evm.utg4.9	sp|O09018|COT2_RAT	36.413	368	195	7	44	411	78	406	2.41e-73	238
+evm.utg4.10	sp|P50938|Y612_RICPR	24.906	265	139	15	17	251	288	522	3.04e-09	62.0
+evm.utg4.11	sp|A8MY62|BLML_HUMAN	29.907	428	229	9	32	431	26	410	3.41e-48	180
+
+========================================
+Running BLASTp for: Cnidarian TrEMBL
+Reference FASTA: 02_annotation/reference_dbs/trembl_cnidaria_selected.fasta
+BLAST DB:        02_annotation/db/trembl_cnidaria_selected_blast
+Raw top 10 TSV:  02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw_representative.tsv
+Best hit TSV:    02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv
+Threads:         8
+Top N:           10
+========================================
+
+
+Building a new DB, current time: 04/26/2026 21:21:12
+New DB name:   /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/db/trembl_cnidaria_selected_blast
+New DB title:  02_annotation/reference_dbs/trembl_cnidaria_selected.fasta
+Sequence type: Protein
+Deleted existing Protein BLAST database named /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/db/trembl_cnidaria_selected_blast
+Keep MBits: T
+Maximum file size: 3000000000B
+Adding sequences from FASTA; added 440046 sequences in 17.1318 seconds.
+
+

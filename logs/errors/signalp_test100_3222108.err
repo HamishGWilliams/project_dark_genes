@@ -1,0 +1,10 @@
+
+Currently Loaded Modules:
+  1) slurm/22.05.2-1 (S)   3) perl/5.36.0         5) miniconda3/latest
+  2) lmod                  4) blast-plus/2.16.0   6) signalp/5.0b
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+
+ 
+

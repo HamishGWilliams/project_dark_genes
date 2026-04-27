@@ -1,0 +1,24 @@
+Master annotation test100 summary
+=================================
+
+Input FASTA: 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa
+Rows written: 100
+
+Input files used:
+representative_lookup	FOUND	01_qc/isoforms/representative_longest_protein_per_gene.tsv
+diamond_swissprot	FOUND	02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv
+diamond_trembl_cnidaria	FOUND	02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv
+blastp_swissprot	FOUND	02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv
+blastp_trembl_cnidaria	FOUND	02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv
+interproscan	FOUND	02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv
+eggnog	FOUND	02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations
+signalp	FOUND	02_annotation/signalp/summary/equina_representative_test100.signalp5_summary.tsv
+
+Annotation class counts and proportions:
+annotation_class	count	proportion	percentage
+annotated_swissprot_supported	42	0.4200	42.00%
+sequence_supported_trembl_cnidaria	42	0.4200	42.00%
+domain_supported_interpro	10	0.1000	10.00%
+orthology_supported_eggnog	0	0.0000	0.00%
+function_dark_but_signalp_secretory_candidate	0	0.0000	0.00%
+function_dark_no_current_annotation	6	0.0600	6.00%

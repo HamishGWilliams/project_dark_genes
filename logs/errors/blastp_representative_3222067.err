@@ -1,0 +1,9 @@
+environment: line 17: /usr/local/lmod/lmod/libexec/lmod: No such file or directory
+/tmp/slurmd/job3222067/slurm_script: line 55: makeblastdb: command not found
+/tmp/slurmd/job3222067/slurm_script: line 60: blastp: command not found
+awk: fatal: cannot open file `02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw_representative.tsv' for reading (No such file or directory)
+wc: 02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw_representative.tsv: No such file or directory
+/tmp/slurmd/job3222067/slurm_script: line 55: makeblastdb: command not found
+/tmp/slurmd/job3222067/slurm_script: line 60: blastp: command not found
+awk: fatal: cannot open file `02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw_representative.tsv' for reading (No such file or directory)
+wc: 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw_representative.tsv: No such file or directory

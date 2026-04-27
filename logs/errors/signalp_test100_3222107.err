@@ -1,0 +1,13 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) slurm/22.05.2-1
+
+Currently Loaded Modules:
+  1) slurm/22.05.2-1 (S)   2) signalp/5.0b
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+
+ 
+

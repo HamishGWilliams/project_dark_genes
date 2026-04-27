@@ -1,0 +1,83 @@
+Starting to think about how to go about making the master annotation document for our pipeline.
+
+Some important things to consider:
+- We have heirarchical DIAMOND and BLASTp results
+	- SWISSPROT proteomes
+	- Cnidaria-TrEMBL proteomes
+
+- All results are based on a representative proteome which minimises redundancy by selecting representative sequences/proteins where genes have isoforms.
+
+# 1. create directories
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+mkdir -p 02_annotation/master/test100
+
+# 2. create master annotation compiler
+nano scripts/build_master_annotation_test100.py
+	# see python script for details
+
+## executable
+chmod +x scripts/build_master_annotation_test100.py
+
+# 3. Check expected test files exist
+ls -lh \
+  02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa \
+  02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv \
+  02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations \
+  02_annotation/signalp/summary/equina_representative_test100.signalp5_summary.tsv
+
+find 02_annotation/diamond 02_annotation/blastp \
+  -type f \( -name "*representative*top_hits.tsv" -o -name "*swissprot*top_hits.tsv" -o -name "*trembl*top_hits.tsv" \) \
+  | sort
+
+# 4. Run compiler
+python3 scripts/build_master_annotation_test100.py \
+  --fasta 02_annotation/eggnog/test_input/equina_representative_test100.no_stop.fa \
+  --diamond-swissprot 02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv \
+  --diamond-trembl-cnidaria 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv \
+  --blastp-swissprot 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv \
+  --blastp-trembl-cnidaria 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv \
+  --interproscan 02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv \
+  --eggnog 02_annotation/eggnog/raw/equina_representative_test100.emapper.annotations \
+  --signalp 02_annotation/signalp/summary/equina_representative_test100.signalp5_summary.tsv \
+  --out 02_annotation/master/test100/equina_representative_test100.master_annotation.tsv
+
+# 5. inspect the master table
+ls -lh 02_annotation/master/test100/
+cat 02_annotation/master/test100/equina_representative_test100.master_annotation.summary.txt
+wc -l 02_annotation/master/test100/equina_representative_test100.master_annotation.tsv
+
+# How to interpret the results ---------------------------------
+
+The current classification hierarchy is conservative:
+1. annotated_swissprot_supported
+2. sequence_supported_trembl_cnidaria
+3. domain_supported_interpro
+4. orthology_supported_eggnog
+5. function_dark_but_signalp_secretory_candidate
+6. function_dark_no_current_annotation
+
+In the 100-protein test set, the current interpretation is:
+42% Swiss-Prot-supported
+42% Cnidaria-TrEMBL-supported
+10% InterPro/domain-supported only
+0% eggNOG-only supported
+0% SignalP-only secretory dark candidates
+6% currently function-dark
+
+The eggnog_hit count can be higher than the orthology_supported_eggnog class count because the hierarchy only assigns eggNOG as the main class if no higher-priority Swiss-Prot, TrEMBL, or InterPro evidence exists. In this test set, eggNOG supports many proteins, but none exclusively.
+
+# Full run master annotation table -------------------------------
+## build script:
+scripts/build_master_annotation_full.py
+
+## Run with:
+python3 scripts/build_master_annotation_test100.py \
+  --fasta 02_annotation/eggnog/input/equina_representative_longest_per_gene.no_stop.fa \
+  --diamond-swissprot 02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv \
+  --diamond-trembl-cnidaria 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv \
+  --blastp-swissprot 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv \
+  --blastp-trembl-cnidaria 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv \
+  --interproscan 02_annotation/interproscan/raw/equina_representative_test100.interproscan.tsv \ # Update with new name
+  --eggnog 02_annotation/eggnog/raw/equina_representative_full.emapper.annotations \ 
+  --signalp 02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv \
+  --out 02_annotation/master/test100/equina_representative.master_annotation.tsv

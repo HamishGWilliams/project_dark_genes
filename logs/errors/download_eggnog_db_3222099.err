@@ -1,0 +1,19 @@
+environment: line 17: /usr/local/lmod/lmod/libexec/lmod: No such file or directory
+--2026-04-26 12:46:07--  http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog.db.gz
+Resolving eggnogdb.embl.de (eggnogdb.embl.de)... 194.94.44.170
+Connecting to eggnogdb.embl.de (eggnogdb.embl.de)|194.94.44.170|:80... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-04-26 12:46:08 ERROR 404: Not Found.
+
+--2026-04-26 12:46:08--  http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog.taxa.tar.gz
+Resolving eggnogdb.embl.de (eggnogdb.embl.de)... 194.94.44.170
+Connecting to eggnogdb.embl.de (eggnogdb.embl.de)|194.94.44.170|:80... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-04-26 12:46:08 ERROR 404: Not Found.
+
+--2026-04-26 12:46:08--  http://eggnogdb.embl.de/download/emapperdb-5.0.2/eggnog_proteins.dmnd.gz
+Resolving eggnogdb.embl.de (eggnogdb.embl.de)... 194.94.44.170
+Connecting to eggnogdb.embl.de (eggnogdb.embl.de)|194.94.44.170|:80... connected.
+HTTP request sent, awaiting response... 404 Not Found
+2026-04-26 12:46:08 ERROR 404: Not Found.
+

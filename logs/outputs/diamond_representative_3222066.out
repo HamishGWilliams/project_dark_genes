@@ -1,0 +1,51 @@
+========================================
+Running DIAMOND for: Swiss-Prot
+Reference FASTA: 02_annotation/reference_dbs/swissprot_all.fasta
+Database prefix: 02_annotation/db/swissprot_all
+Output TSV:      02_annotation/diamond/equina_vs_swissprot_all_representative.diamond.tsv
+Threads:         8
+========================================
+
+Line counts for Swiss-Prot:
+  314000 02_annotation/diamond/equina_vs_swissprot_all_representative.diamond.tsv
+   21052 02_annotation/diamond/equina_vs_swissprot_all_representative.top_hits.tsv
+  335052 total
+
+First few top hits for Swiss-Prot:
+evm.utg4.3	sp|O42412|IOD3_CHICK	43.6	165	91	2	78	241	79	242	2.09e-39	140
+evm.utg4.4	sp|O42412|IOD3_CHICK	45.0	191	101	2	59	248	60	247	7.89e-48	162
+evm.utg4.7	sp|Q5RF50|VKGC_PONAB	51.0	567	239	8	1	562	75	607	5.27e-195	573
+evm.utg4.8	sp|Q01664|TFAP4_HUMAN	54.0	174	52	4	30	203	38	183	1.34e-37	138
+evm.utg4.9	sp|Q6GN21|N2C1A_XENLA	33.5	475	197	8	45	405	152	621	5.93e-71	238
+evm.utg4.11	sp|A8MY62|BLML_HUMAN	27.9	580	324	15	32	565	26	557	2.60e-50	186
+evm.utg4.12	sp|E0CZ16|KLHL3_MOUSE	29.2	325	222	3	25	348	41	358	6.38e-40	157
+evm.utg4.15	sp|A7YY46|PNKD_BOVIN	50.3	300	149	0	32	331	80	379	5.29e-99	300
+evm.utg4.16	sp|Q96G03|PGM2_HUMAN	52.3	602	271	4	13	599	12	612	1.16e-213	611
+evm.utg4.18	sp|Q8WWN8|ARAP3_HUMAN	25.6	1077	648	29	525	1488	291	1327	1.25e-75	281
+
+========================================
+Running DIAMOND for: TrEMBL
+Reference FASTA: 02_annotation/reference_dbs/trembl_cnidaria_selected.fasta
+Database prefix: 02_annotation/db/trembl_cnidaria_selected
+Output TSV:      02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.diamond.tsv
+Threads:         8
+========================================
+
+Line counts for TrEMBL:
+  738310 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.diamond.tsv
+   39981 02_annotation/diamond/equina_vs_trembl_cnidaria_selected_representative.top_hits.tsv
+  778291 total
+
+First few top hits for TrEMBL:
+evm.utg4.3	tr|A0A6P8J6P1|A0A6P8J6P1_ACTTE	100	259	0	0	1	259	1	259	2.41e-188	518
+evm.utg4.4	tr|A0A6P8J1S8|A0A6P8J1S8_ACTTE	99.6	248	1	0	1	248	1	248	7.52e-180	498
+evm.utg4.6	tr|A7T129|A7T129_NEMVE	44.4	126	47	8	12	127	10	122	1.10e-13	69.7
+evm.utg4.7	tr|A0A6P8J9J7|A0A6P8J9J7_ACTTE	99.9	705	1	0	1	705	52	756	0.0	1419
+evm.utg4.8	tr|A0A6P8J6J5|A0A6P8J6J5_ACTTE	100	267	0	0	1	267	1	267	2.09e-177	491
+evm.utg4.9	tr|A0A6P8J1Y9|A0A6P8J1Y9_ACTTE	100	411	0	0	1	411	1	411	9.83e-301	815
+evm.utg4.11	tr|A0A6P8J0X1|A0A6P8J0X1_ACTTE	95.1	596	7	1	1	596	1	574	0.0	1117
+evm.utg4.12	tr|A0A6P8J9K6|A0A6P8J9K6_ACTTE	99.7	584	2	0	1	584	1	584	0.0	905
+evm.utg4.13	tr|A0A6P8J6P5|A0A6P8J6P5_ACTTE	100	378	0	0	1	378	1	378	4.28e-276	750
+evm.utg4.14	tr|A0A6P8J1R7|A0A6P8J1R7_ACTTE	96.4	887	1	1	1	856	32	918	0.0	1458
+
+All DIAMOND searches completed successfully.

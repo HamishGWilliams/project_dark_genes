@@ -1,0 +1,33 @@
+========================================
+Running BLASTp for: Swiss-Prot
+Reference FASTA: 02_annotation/reference_dbs/swissprot_all.fasta
+BLAST DB:        02_annotation/db/swissprot_all_blast
+Raw top 10 TSV:  02_annotation/blastp/equina_vs_swissprot_all.blastp.top10_raw_representative.tsv
+Best hit TSV:    02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv
+Threads:         8
+Top N:           10
+========================================
+
+Line counts for Swiss-Prot:
+0 02_annotation/blastp/equina_vs_swissprot_all.best_hit_representative.tsv
+0 total
+
+First few best hits for Swiss-Prot:
+
+========================================
+Running BLASTp for: Cnidarian TrEMBL
+Reference FASTA: 02_annotation/reference_dbs/trembl_cnidaria_selected.fasta
+BLAST DB:        02_annotation/db/trembl_cnidaria_selected_blast
+Raw top 10 TSV:  02_annotation/blastp/equina_vs_trembl_cnidaria_selected.blastp.top10_raw_representative.tsv
+Best hit TSV:    02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv
+Threads:         8
+Top N:           10
+========================================
+
+Line counts for Cnidarian TrEMBL:
+0 02_annotation/blastp/equina_vs_trembl_cnidaria_selected.best_hit_representative.tsv
+0 total
+
+First few best hits for Cnidarian TrEMBL:
+
+All BLASTp searches completed successfully.

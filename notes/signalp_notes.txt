@@ -1,0 +1,93 @@
+SignalP is a bit different from DIAMOND, InterProScan, and eggNOG-mapper because it is usually distributed under a licence from DTU/SignalP rather than as a normal open package. So the first step is to check whether Maxwell already has it as a module. If not, I need to download it from the official SignalP site after agreeing to the licence, then transfer/install it in the user space.
+
+For this project, SignalP should be run on the representative protein set, and it will form the secretory-signal annotation layer for the final master table. The tracker already lists SignalP as a pending annotation step for unresolved candidates.
+
+# 1. Create SignalP project directories
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+mkdir -p 02_annotation/signalp/{raw,summary,test_input,tmp}
+mkdir -p scripts
+mkdir -p logs/outputs logs/errors
+
+# add signalp raw to .gitignore
+cat >> .gitignore <<'EOF'
+
+# SignalP raw outputs and temporary files
+02_annotation/signalp/raw/
+02_annotation/signalp/tmp/
+02_annotation/signalp/test_input/
+EOF
+
+# check if it already exists
+module avail signalp
+	
+------------------------------ /opt/software/uoa/modules/apps -----------------------------
+   signalp/4.1    signalp/5.0b (D)
+
+module load signalp/5.0b
+
+# confirm representative FASTA exists
+ls -lh 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+grep -c '^>' 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+
+# Create 100-protein SignalP test sey
+python3 - <<'PY'
+from pathlib import Path
+
+inp = Path("02_annotation/input/equina_representative_longest_per_gene.no_stop.fa")
+out = Path("02_annotation/signalp/test_input/equina_representative_test100.no_stop.fa")
+out.parent.mkdir(parents=True, exist_ok=True)
+
+n = 0
+write = False
+
+with inp.open() as fin, out.open("w") as fout:
+    for line in fin:
+        if line.startswith(">"):
+            n += 1
+            write = n <= 100
+        if write:
+            fout.write(line)
+
+print(f"Wrote {min(n, 100)} proteins to {out}")
+PY
+
+grep -c '^>' 02_annotation/signalp/test_input/equina_representative_test100.no_stop.fa
+
+# Create signalp SLURM script
+	# created in: run_signalp.sh
+
+# executable:
+chmod +x scripts/run_signalp.sh
+
+# submit job
+sbatch \
+  --job-name=signalp_test100 \
+  --export=ALL,QUERY=02_annotation/signalp/test_input/equina_representative_test100.no_stop.fa,RUN_NAME=equina_representative_test100 \
+  scripts/run_signalp.sh
+
+# count predicted positives
+wc -l 02_annotation/signalp/summary/equina_representative_test100.signalp5_positive_predictions.tsv
+	# 8
+head 02_annotation/signalp/summary/equina_representative_test100.signalp5_positive_predictions.tsv
+
+# Run on full representative proteome
+sbatch \
+  --job-name=signalp_rep_full \
+  --export=ALL,QUERY=02_annotation/input/equina_representative_longest_per_gene.no_stop.fa,RUN_NAME=equina_representative_full \
+  scripts/run_signalp.sh
+
+
+# Count total representative proteins and SignalP-positive predications
+TOTAL=$(grep -c '^>' 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa)
+POSITIVES=$(wc -l < 02_annotation/signalp/summary/equina_representative_full.signalp5_positive_predictions.tsv)
+
+echo "Representative proteins: $TOTAL"
+	# 47671
+
+echo "SignalP-positive predictions: $POSITIVES"
+	# SignalP-positive predictions: 4780
+
+awk -v p="$POSITIVES" -v t="$TOTAL" 'BEGIN {printf "SignalP-positive proportion: %.2f%%\n", (p/t)*100}'
+	# SignalP-positive proportion: 10.03%
+

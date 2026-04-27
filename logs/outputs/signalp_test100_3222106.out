@@ -1,0 +1,35 @@
+========================================
+Project dir : /uoa/home/r02hw22/sharedscratch/project_dark_genes
+Query FASTA : 02_annotation/signalp/test_input/equina_representative_test100.no_stop.fa
+Run name    : equina_representative_test100
+Output dir  : 02_annotation/signalp/raw/equina_representative_test100
+Summary dir : 02_annotation/signalp/summary
+SignalP     : /opt/software/uoa/apps/signalp/5.0b/bin/signalp
+========================================
+Usage of signalp:
+  -batch int
+    	Number of sequences that the tool will run simultaneously. Decrease or increase size depending on your system memory. (default 10000)
+  -fasta string
+    	Input file in fasta format.
+  -format string
+    	Output format. 'long' for generating the predictions with plots, 'short' for the predictions without plots. (default "short")
+  -gff3
+    	Make gff3 file of processed sequences.
+  -mature
+SignalP-5.0. Starting fasta file reading...
+Total proteins read: 100.
+Organism: euk.
+Starting protein prediction...
+Temporary directory: /tmp/signalp5.598839561
+Protein prediction done!
+Generating output files...
+Completed.
+SignalP command finished.
+Raw output files:
+02_annotation/signalp/raw/equina_representative_test100/equina_representative_test100_summary.signalp5
+-rw-r--r-- 1 r02hw22 UG Science 4.1K Apr 26 13:52 02_annotation/signalp/raw/equina_representative_test100/equina_representative_test100_summary.signalp5
+Detected SignalP 5 summary file: 02_annotation/signalp/raw/equina_representative_test100/equina_representative_test100_summary.signalp5
+Summary files:
+-rw-r--r-- 1 r02hw22 UG Science  605 Apr 26 13:52 02_annotation/signalp/summary/equina_representative_test100.signalp5_positive_predictions.tsv
+-rw-r--r-- 1 r02hw22 UG Science 4.1K Apr 26 13:52 02_annotation/signalp/summary/equina_representative_test100.signalp5_summary.tsv
+Done.

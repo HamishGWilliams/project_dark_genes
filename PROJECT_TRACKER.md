@@ -106,18 +106,27 @@ Interpretation:
 
 ### 2. Start functional annotation
 - [x] Run DIAMOND against SWISSPROT and cnidaria-TrEMBL proteomes
-- [ ] Run BLASTp against SWISSPROT and cnidaria-TrEMBL proteomes
-- [ ] Finish downloading all metazoa proteomes
-- [ ] Run DIAMOND against wider metazoa proteomes for fallback
-- [ ] Run BLASTp against wider metazoa proteomes for fallback
-- [ ] Run InterProScan
-- [ ] Run eggNOG-mapper
-- [ ] Run SignalP for unresolved candidates
-- [ ] Build a master annotation table with one row per gene/protein
+- [X] Run BLASTp against SWISSPROT and cnidaria-TrEMBL proteomes
+- [X] Run InterProScan
+- [X] Run eggNOG-mapper
+- [x] Run SignalP on the representative protein set
+  - Module: `signalp/5.0b`
+  - Input: `02_annotation/input/equina_representative_longest_per_gene.no_stop.fa`
+  - Raw output: `02_annotation/signalp/raw/equina_representative_full/`
+  - Summary output: `02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv`
+  - Positive predictions: `02_annotation/signalp/summary/equina_representative_full.signalp5_positive_predictions.tsv`
+- [ ] Build a master annotation table with one row per gene/protein 
+	- Tested with: build_master_annotation_test100.py
+	- Validate with: qc_master_annotation_test100.sh
+	- build full table script: build_master_annotation_full.py
+		- Waiting for full BLASTp and InterProScan to complete before running
 
 ### 3. Start genome-aware validation
 - [ ] Parse the GFF3 into a gene-to-transcript-to-protein lookup table
 - [ ] Map candidate dark genes back to genome coordinates
+- [ ] RepeatModeler and RepeatMasker to identify repeats
+	- Identify TEs vs non-TE repeats
+	- Label repeats appropriately
 - [ ] Summarise exon count, CDS span, transcript span, and scaffold location for each candidate
 - [ ] Use genome context later to help distinguish plausible genes from suspicious models
 
@@ -134,10 +143,11 @@ Interpretation:
 ## Future annotation tasks
 
 ### Functional annotation
-- [ ] Run DIAMOND or BLASTp against UniProt / reference proteomes
+- [X] Run DIAMOND against UniProt / reference proteomes
+- [ ] Run BLASTp against UniProt / reference proteomes
 - [ ] Run InterProScan
-- [ ] Run eggNOG-mapper
-- [ ] Run SignalP for unresolved candidates
+- [X] Run eggNOG-mapper
+- [X] Run SignalP for unresolved candidates
 - [ ] Build a master annotation table with one row per gene/protein
 
 ### Dark-gene classification
