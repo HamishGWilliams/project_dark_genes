@@ -37,6 +37,7 @@ Interpretation:
 - The project can now proceed as a **genome-aware and expression-aware dark-gene workflow** rather than a proteome-only survey
 - Candidate dark genes can later be mapped back to genomic coordinates and evaluated in structural context
 - RNA-seq can be used to distinguish expressed dark candidates from unsupported predictions and to prioritise stress-responsive candidates
+- Because BUSCO duplication is high, downstream dark-gene calls should remain conservative until isoform reduction, homology filtering, genome-context checks, and expression evidence are integrated
 
 ---
 
@@ -58,6 +59,13 @@ Interpretation:
 - [x] Established that RNA-seq data are available for downstream validation and prioritisation
 - [x] Confirmed RNA-seq library layout is paired-end and unstranded
 - [x] Located an experiment notes file describing treatment conditions and sample size
+- [x] Generated a representative protein set by selecting the longest representative protein per gene/isoform group
+- [x] Removed terminal stop characters from representative protein sequences for compatibility with InterProScan and downstream tools
+- [x] Installed and tested InterProScan
+- [x] Installed and tested eggNOG-mapper after manually resolving database download issues
+- [x] Confirmed SignalP module availability and successfully tested `signalp/5.0b`
+- [x] Built a 100-protein test master annotation table
+- [x] Built and ran a 100-protein master-table QC script
 
 ---
 
@@ -66,6 +74,8 @@ Interpretation:
 - [x] Generate QC tables for CDS lengths and protein lengths
 - [x] Flag short proteins for review rather than immediate removal
 - [x] Run BUSCO in **protein mode** on the amino acid FASTA
+- [ ] Revise homology annotation thresholds and regenerate filtered DIAMOND/BLASTp files before final master-table classification
+- [ ] Rebuild the 100-protein and full representative master annotation tables using filtered sequence-similarity evidence
 
 ---
 
@@ -97,6 +107,54 @@ Interpretation:
 
 ---
 
+## Annotation threshold revision checkpoint
+
+Detailed working note: `notes/annotation_threshold_revision_plan.md`
+
+### Rationale
+The current DIAMOND/BLASTp workflow generated top-hit files before applying a formal hit-quality threshold. This is acceptable for pipeline testing but not for final dark-gene classification, because weak sequence-similarity hits could incorrectly rescue proteins from the dark/unresolved category.
+
+The revised homology threshold is aligned with the coral dark-gene approach from Stephens et al. and uses:
+
+```text
+e-value <= 1e-5
+```
+
+This threshold should be applied to DIAMOND and BLASTp hits before selecting top hits for the master annotation table.
+
+### Revised sequence-similarity handling
+- Use `e-value <= 1e-5` as the primary sequence-similarity inclusion threshold.
+- Retain percent identity, alignment length, bitscore, query length, subject length, query coverage, and subject coverage as QC/reporting fields where possible.
+- Do **not** use identity or coverage as hard filters for the main annotation classes unless a separate high-confidence subcategory is defined later.
+- Where subject descriptions are available, especially for TrEMBL, flag ambiguous descriptions such as:
+  - `uncharacterized protein`
+  - `hypothetical protein`
+  - `predicted protein`
+  - `expressed protein`
+  - `unnamed protein product`
+- Prefer excluding ambiguous TrEMBL descriptions from the main `sequence_supported_trembl_cnidaria` class where descriptions are available.
+
+### Revised homology-output format
+Future DIAMOND/BLASTp runs should include query and subject lengths:
+
+```text
+qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+```
+
+### Revised annotation hierarchy
+The master annotation table should assign one primary class per representative protein in this order:
+
+1. `annotated_swissprot_supported`
+2. `sequence_supported_trembl_cnidaria`
+3. `domain_supported_interpro`
+4. `orthology_supported_eggnog`
+5. `function_dark_but_signalp_secretory_candidate`
+6. `function_dark_no_current_annotation`
+
+Only threshold-passing DIAMOND/BLASTp evidence should be allowed to assign categories 1 or 2.
+
+---
+
 ## Immediate next tasks
 
 ### 1. Archive BUSCO outputs for interpretation
@@ -104,33 +162,70 @@ Interpretation:
 - [x] Save `short_summary` output into the project repository as a lightweight text summary
 - [x] Save or inspect `full_table.tsv` for duplicated/fragmented BUSCO patterns
 
-### 2. Start functional annotation
-- [x] Run DIAMOND against SWISSPROT and cnidaria-TrEMBL proteomes
-- [X] Run BLASTp against SWISSPROT and cnidaria-TrEMBL proteomes
-- [X] Run InterProScan
-- [X] Run eggNOG-mapper
+### 2. Functional annotation threshold revision
+- [ ] Update DIAMOND scripts to use `--evalue 1e-5`
+- [ ] Consider using DIAMOND `--ultra-sensitive` for final searches
+- [ ] Consider using DIAMOND `--max-target-seqs 0` or another sufficiently exhaustive setting if retaining multiple hits for description filtering
+- [ ] Update BLASTp scripts to use `-evalue 1e-5`
+- [ ] Update DIAMOND/BLASTp output formats to include `qlen` and `slen`
+- [ ] Write raw all-hit files to local ignored output directories
+- [ ] Write filtered outputs to local ignored output directories
+- [ ] Generate filtered top-hit files only after applying `e-value <= 1e-5`
+- [ ] Confirm filtered DIAMOND files contain only hits passing `e-value <= 1e-5`
+- [ ] Confirm filtered BLASTp files contain only hits passing `e-value <= 1e-5`
+
+### 3. Functional annotation status
+- [x] Run DIAMOND against Swiss-Prot and Cnidaria-TrEMBL proteomes for initial/provisional annotation
+- [ ] Regenerate or refilter DIAMOND Swiss-Prot results using the revised threshold strategy
+- [ ] Regenerate or refilter DIAMOND Cnidaria-TrEMBL results using the revised threshold strategy
+- [x] Run BLASTp against Swiss-Prot and Cnidaria-TrEMBL proteomes for initial/provisional annotation
+- [ ] Regenerate or refilter BLASTp Swiss-Prot results using the revised threshold strategy
+- [ ] Regenerate or refilter BLASTp Cnidaria-TrEMBL results using the revised threshold strategy
+- [ ] Finish downloading all metazoa proteomes
+- [ ] Run DIAMOND against wider metazoa proteomes for fallback
+- [ ] Run BLASTp against wider metazoa proteomes for fallback
+- [x] Run InterProScan test successfully
+- [ ] Confirm full representative InterProScan completion and outputs
+- [x] Run eggNOG-mapper test successfully
+- [ ] Confirm full representative eggNOG-mapper completion and outputs
 - [x] Run SignalP on the representative protein set
   - Module: `signalp/5.0b`
   - Input: `02_annotation/input/equina_representative_longest_per_gene.no_stop.fa`
   - Raw output: `02_annotation/signalp/raw/equina_representative_full/`
   - Summary output: `02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv`
   - Positive predictions: `02_annotation/signalp/summary/equina_representative_full.signalp5_positive_predictions.tsv`
-- [ ] Build a master annotation table with one row per gene/protein 
-	- Tested with: build_master_annotation_test100.py
-	- Validate with: qc_master_annotation_test100.sh
-	- build full table script: build_master_annotation_full.py
-		- Waiting for full BLASTp and InterProScan to complete before running
 
-### 3. Start genome-aware validation
+### 4. Master annotation table rebuild
+- [x] Build and validate a 100-protein master annotation table for pipeline testing
+  - Test compiler: `scripts/build_master_annotation_test100.py`
+  - Test QC: `scripts/qc_master_annotation_test100.sh`
+- [ ] Update the master annotation compiler to use filtered DIAMOND/BLASTp files rather than unfiltered top-hit files
+- [ ] Add or retain homology QC columns where possible:
+  - `pident`
+  - `alignment_length`
+  - `evalue`
+  - `bitscore`
+  - `qlen`
+  - `slen`
+  - `query_coverage`
+  - `subject_coverage`
+- [ ] Keep all six annotation categories in fixed summary order, including zero-count classes
+- [ ] Rebuild the 100-protein master table after threshold revision
+- [ ] Rerun the 100-protein QC script after threshold revision
+- [ ] Build the full representative master table after all full annotation layers are present
+  - Full compiler: `scripts/build_master_annotation_full.py`
+- [ ] Create/run a full-proteome QC script equivalent to the 100-protein QC script
+
+### 5. Start genome-aware validation
 - [ ] Parse the GFF3 into a gene-to-transcript-to-protein lookup table
 - [ ] Map candidate dark genes back to genome coordinates
 - [ ] RepeatModeler and RepeatMasker to identify repeats
-	- Identify TEs vs non-TE repeats
-	- Label repeats appropriately
+  - Identify TEs vs non-TE repeats
+  - Label repeats appropriately
 - [ ] Summarise exon count, CDS span, transcript span, and scaffold location for each candidate
 - [ ] Use genome context later to help distinguish plausible genes from suspicious models
 
-### 4. Integrate RNA-seq evidence
+### 6. Integrate RNA-seq evidence
 - [ ] Convert the `notes/` experiment file into a tabular RNA-seq sample sheet with sample IDs, treatment/control labels, replicate IDs, and file paths
 - [ ] Align paired-end unstranded reads to the genome or transcriptome
 - [ ] Quantify expression at transcript/gene level
@@ -140,19 +235,42 @@ Interpretation:
 
 ---
 
+## Planned deliverables after annotation revision
+
+```text
+02_annotation/diamond/raw/
+02_annotation/diamond/filtered/
+02_annotation/blastp/raw/
+02_annotation/blastp/filtered/
+02_annotation/master/test100/equina_representative_test100.master_annotation.tsv
+02_annotation/master/test100/equina_representative_test100.master_annotation.summary.txt
+02_annotation/master/test100/qc/
+02_annotation/master/full/equina_representative_full.master_annotation.tsv
+02_annotation/master/full/equina_representative_full.master_annotation.summary.txt
+02_annotation/master/full/qc/
+03_dark_candidates/
+```
+
+Large generated outputs should remain local/HPC-only and should not be committed to GitHub. Scripts, notes, lightweight summaries, and tracker updates should be committed.
+
+---
+
 ## Future annotation tasks
 
 ### Functional annotation
-- [X] Run DIAMOND against UniProt / reference proteomes
-- [ ] Run BLASTp against UniProt / reference proteomes
-- [ ] Run InterProScan
-- [X] Run eggNOG-mapper
-- [X] Run SignalP for unresolved candidates
-- [ ] Build a master annotation table with one row per gene/protein
+- [ ] Complete threshold-filtered DIAMOND/BLASTp annotation layers
+- [ ] Add wider metazoan fallback searches if required
+- [ ] Confirm full InterProScan, eggNOG-mapper, and SignalP outputs
+- [ ] Build and QC a full master annotation table with one row per representative gene/protein
 
 ### Dark-gene classification
 - [ ] Classify proteins as annotated, sequence-dark, function-dark, or high-confidence dark candidates
 - [ ] Separate genuinely dark proteins from low-confidence short ORFs and fragmented models
+- [ ] Extract `function_dark_no_current_annotation` candidates
+- [ ] Extract `function_dark_but_signalp_secretory_candidate` candidates
+- [ ] Create dark-candidate TSV and FASTA files
+- [ ] Summarise dark-candidate counts and proportions
+- [ ] Record best subthreshold sequence hits, if any, for later manual review
 
 ### Comparative and validation steps
 - [ ] Download comparison proteomes from cnidarians and suitable outgroups
@@ -188,6 +306,18 @@ project_dark_genes/
 ├── 00_raw/
 ├── 01_qc/
 ├── 02_annotation/
+│   ├── diamond/
+│   │   ├── raw/
+│   │   └── filtered/
+│   ├── blastp/
+│   │   ├── raw/
+│   │   └── filtered/
+│   ├── interproscan/
+│   ├── eggnog/
+│   ├── signalp/
+│   └── master/
+│       ├── test100/
+│       └── full/
 ├── 03_dark_candidates/
 ├── 04_reports/
 ├── 05_rnaseq/
