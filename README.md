@@ -4,7 +4,7 @@ Exploring and understanding how to identify novel **“dark” genes** in a non-
 
 ## What I hope to develop
 
-Althought this project is focused on Actinia equina for the time being, once I have validated this pipeline and shown it works for this species, I would like to transform this repository into a space to walk people through various bioinformatic methods and techniques towards dark gene novelty, providing a clear and structured guide walking through the relevant methods, including downloadig packages. I do not want to be the "de-facto" person or pipeline for doing this type of analysis, but if I can provdie a scaffold/backbone for people (especially early career researchers) to develop their own bioinformatic pipelines and provide some clarity on what and why I/We use certain methods and threshold, then this project's secondary goals will be complete. 
+Although this project is focused on *Actinia equina* for the time being, once I have validated this pipeline and shown it works for this species, I would like to transform this repository into a space to walk people through various bioinformatic methods and techniques towards dark-gene novelty. The secondary goal is to provide a clear scaffold for others, especially early-career researchers, to develop their own workflows while understanding what each method, threshold, and filtering step contributes.
 
 ## Project aim
 
@@ -45,11 +45,11 @@ In this project, a **dark gene** is treated as a gene/protein that remains unres
 - GFF3 seqids match genome contig names
 - mean protein length is **452.05 aa**
 - protein length range is **32 aa** to **10,458 aa**
-- the available data now support a **genome-aware and expression-aware dark-gene workflow**
-- a representative protein set has been generated to reduce redundancy from isoforms
-- the final annotation workflow is being revised so DIAMOND/BLASTp evidence is filtered before master-table classification
-- the 100-protein test group has successfully passed the revised DIAMOND/BLASTp workflow using `e-value <= 1e-5` filtering and the expanded outfmt 6 columns: `qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen`
-- full representative DIAMOND and BLASTp jobs are currently being run with the same threshold-filtered homology strategy
+- the available data support a **genome-aware and expression-aware dark-gene workflow**
+- a representative no-stop protein set has been generated to reduce redundancy from isoforms
+- the 100-protein test group successfully passed the revised annotation compilation workflow
+- the first full representative master annotation table has now been compiled and checked
+- the current full master annotation results are considered robust and consistent with the methods defined so far
 
 ---
 
@@ -101,6 +101,46 @@ This means downstream dark-gene classification should be **conservative**, parti
 
 ---
 
+## Annotation checkpoint
+
+The first full representative master annotation compilation has been completed.
+
+The current annotation strategy integrates:
+
+- representative no-stop protein FASTA as the row universe
+- representative gene/isoform lookup information
+- DIAMOND Swiss-Prot homology evidence
+- DIAMOND Cnidaria-TrEMBL homology evidence
+- BLASTp Swiss-Prot homology evidence
+- BLASTp Cnidaria-TrEMBL homology evidence
+- InterProScan domain/family/GO/pathway evidence
+- eggNOG-mapper orthology and functional annotation evidence
+- SignalP secretory-signal prediction
+
+### Homology filtering currently used
+
+DIAMOND and BLASTp evidence is filtered using:
+
+```text
+E-value <= 1e-5
+```
+
+The homology output format has been expanded to retain useful interpretive fields:
+
+```text
+qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+```
+
+Where available, subject-title/description information is also retained for TrEMBL ambiguity checks.
+
+### TrEMBL interpretation
+
+TrEMBL evidence is treated conservatively and is **not considered equivalent to Swiss-Prot**.
+
+Cnidaria-TrEMBL hits are used as lower-confidence sequence-support evidence only when they are threshold-passing and informative. Ambiguous descriptions such as hypothetical, uncharacterized/uncharacterised, predicted, unnamed, or unknown proteins are flagged for review and should not independently rescue a protein from dark-gene status.
+
+---
+
 ## What has been completed so far
 
 - defined the conceptual dark-gene workflow for cnidarian genomes
@@ -118,48 +158,58 @@ This means downstream dark-gene classification should be **conservative**, parti
 - installed and tested InterProScan, eggNOG-mapper, and SignalP
 - built and QC-tested a 100-protein master annotation table
 - successfully updated and QC-tested the 100-protein DIAMOND/BLASTp homology workflow with `e-value <= 1e-5`, expanded outfmt 6 fields including `qlen` and `slen`, post-processing e-value filtering, and coverage-field propagation into the master table
+- regenerated full representative DIAMOND and BLASTp outputs using the revised threshold-filtered homology strategy
+- compiled and checked the first full representative master annotation table
+- confirmed that the current full master annotation results are robust and consistent with the agreed annotation hierarchy
 - recorded the revised annotation-threshold plan in `notes/annotation_threshold_revision_plan.md`
 
 ---
 
 ## Immediate next steps
 
-### 1. Complete threshold-filtered homology annotation
-- full representative DIAMOND searches are currently running or being regenerated using `e-value <= 1e-5` and expanded outfmt 6 fields
-- full representative BLASTp searches are currently running or being regenerated using `e-value <= 1e-5` and expanded outfmt 6 fields
-- retain `pident`, alignment length, bitscore, query length, subject length, and coverage fields where possible
-- generate filtered top-hit files only after applying the e-value threshold
-- avoid using unfiltered top-hit files for final dark-gene classification
+### 1. Preserve the current full annotation checkpoint
 
-### 2. Complete full annotation layers
-- confirm full InterProScan output on the representative proteome
-- confirm full eggNOG-mapper output on the representative proteome
-- confirm full SignalP output on the representative proteome
-- confirm full DIAMOND and BLASTp filtered outputs after current jobs finish
+- record the full master annotation summary counts in `PROJECT_TRACKER.md`
+- retain lightweight QC summaries and interpretation notes in the repository
+- keep large raw/filtered annotation output files excluded from Git
+- document any manual interpretation decisions made during this checkpoint
+
+### 2. Extract candidate dark genes
+
+- extract proteins classified as `function_dark_no_current_annotation`
+- extract proteins classified as `function_dark_but_signalp_secretory_candidate`
+- create dark-candidate TSV files
+- create dark-candidate FASTA files
+- retain non-classifying or ambiguous evidence for manual review
 
 ### 3. Build genome-aware lookup tables
+
 - parse the GFF3 into a gene → transcript → protein → contig lookup table
 - link candidate dark genes back to genomic coordinates
 - summarise exon count, CDS span, transcript span, and scaffold location
 - evaluate repeat/TE context using RepeatModeler and RepeatMasker outputs when available
 
 ### 4. Integrate RNA-seq evidence
+
 - convert the experiment notes into a structured sample sheet
+- perform RNA-seq QC
 - align paired-end unstranded reads
 - quantify expression
 - identify expressed candidate dark genes
 - test for differential expression between controls and stressor treatments
 
-### 5. Rebuild and QC the master annotation table
-For each representative gene/protein, integrate:
+### 5. Prioritise high-confidence dark candidates
+
+For each candidate gene/protein, integrate:
 
 - length/QC information
-- threshold-filtered Swiss-Prot similarity results
-- threshold-filtered Cnidaria-TrEMBL similarity results
-- InterProScan domain results
-- eggNOG annotation
-- SignalP secretory-signal prediction
+- absence of threshold-passing Swiss-Prot similarity
+- absence of threshold-passing informative Cnidaria-TrEMBL similarity
+- absence of InterProScan domain/family support
+- absence of eggNOG orthology-based functional support
+- SignalP status
 - genomic context
+- repeat/TE context
 - expression support
 - differential expression status
 
@@ -204,26 +254,24 @@ flowchart TD
     K1 --> K2[Remove terminal stop characters]
     K2 --> K3[Representative no-stop proteome]
 
-    %% Threshold-filtered homology annotation
     K3 --> L1[DIAMOND Swiss-Prot search]
     K3 --> L2[DIAMOND Cnidaria-TrEMBL search]
     K3 --> L3[BLASTp Swiss-Prot search]
     K3 --> L4[BLASTp Cnidaria-TrEMBL search]
 
-    L1 --> M1[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
-    L2 --> M2[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
-    L3 --> M3[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
-    L4 --> M4[Filter hits<br/>e-value <= 1e-5<br/>outfmt includes qlen and slen]
+    L1 --> M1[Filter hits<br/>e-value <= 1e-5<br/>retain qlen and slen]
+    L2 --> M2[Filter hits<br/>e-value <= 1e-5<br/>retain qlen, slen and descriptions]
+    L3 --> M3[Filter hits<br/>e-value <= 1e-5<br/>retain qlen and slen]
+    L4 --> M4[Filter hits<br/>e-value <= 1e-5<br/>retain qlen, slen and descriptions]
 
     M1 --> N1[Filtered Swiss-Prot top hits]
     M2 --> N2[Filtered Cnidaria-TrEMBL top hits]
     M3 --> N3[Filtered BLASTp Swiss-Prot top hits]
     M4 --> N4[Filtered BLASTp Cnidaria-TrEMBL top hits]
 
-    N2 --> N5[Flag ambiguous descriptions<br/>hypothetical or uncharacterized]
-    N4 --> N6[Flag ambiguous descriptions<br/>hypothetical or uncharacterized]
+    N2 --> N5[Flag ambiguous TrEMBL descriptions]
+    N4 --> N6[Flag ambiguous TrEMBL descriptions]
 
-    %% Other annotation layers
     K3 --> O1[InterProScan]
     K3 --> O2[eggNOG-mapper]
     K3 --> O3[SignalP 5.0b]
@@ -232,7 +280,6 @@ flowchart TD
     O2 --> P2[Orthology, COG, GO, KEGG and Pfam evidence]
     O3 --> P3[Signal peptide evidence]
 
-    %% Master table build and QC
     N1 --> Q[Master annotation compiler]
     N2 --> Q
     N3 --> Q
@@ -246,35 +293,14 @@ flowchart TD
     Q --> Q1[Test100 master table]
     Q1 --> Q2[Test100 QC checks]
     Q2 --> Q3{QC passed?}
-    Q3 -->|Yes; threshold-filtered test successful| Q4[Full representative master table]
+    Q3 -->|Yes| Q4[Full representative master table]
     Q3 -->|No| Q5[Revise scripts or source paths]
     Q5 --> Q
-    Q4 --> Q6[Full master-table QC]
+    Q4 --> Q6[Full master-table QC and interpretation]
 
-    %% Genome-aware validation
-    C4 --> R[Parse GFF3 lookup table]
-    C5 --> R
-    R --> R1[Map proteins and transcripts to contigs and coordinates]
-    R1 --> R2[Summarise exon count, CDS span and scaffold context]
-    R2 --> Q4
-
-    C5 --> R3[RepeatModeler and RepeatMasker]
-    R3 --> R4[Flag TE and repeat overlap]
-    R4 --> Q4
-
-    %% RNA-seq integration
-    C6 --> S[Organise RNA-seq sample sheet]
-    C7 --> S
-    S --> T[RNA-seq QC and metadata validation]
-    T --> U[Align paired-end unstranded reads]
-    U --> V[Quantify expression]
-    V --> W[Differential expression<br/>control vs stressors]
-    W --> Q4
-
-    %% Classification
-    Q4 --> X{Hierarchical classification}
+    Q6 --> X{Hierarchical classification}
     X -->|1 Swiss-Prot threshold-passing hit| X1[annotated_swissprot_supported]
-    X -->|2 Cnidaria-TrEMBL threshold-passing informative hit| X2[sequence_supported_trembl_cnidaria]
+    X -->|2 informative Cnidaria-TrEMBL threshold-passing hit| X2[sequence_supported_trembl_cnidaria]
     X -->|3 InterProScan support only| X3[domain_supported_interpro]
     X -->|4 eggNOG support only| X4[orthology_supported_eggnog]
     X -->|5 SignalP positive only| X5[function_dark_but_signalp_secretory_candidate]
@@ -287,6 +313,25 @@ flowchart TD
     Y --> Y3[Genome-context filters]
     Y --> Y4[Expression-support filters]
     Y4 --> Z[Prioritised high-confidence dark genes]
+
+    C4 --> R[Parse GFF3 lookup table]
+    C5 --> R
+    R --> R1[Map proteins and transcripts to contigs and coordinates]
+    R1 --> R2[Summarise exon count, CDS span and scaffold context]
+    R2 --> Y3
+
+    C5 --> R3[RepeatModeler and RepeatMasker]
+    R3 --> R4[Flag TE and repeat overlap]
+    R4 --> Y3
+
+    C6 --> S[Organise RNA-seq sample sheet]
+    C7 --> S
+    S --> T[RNA-seq QC and metadata validation]
+    T --> U[Align paired-end unstranded reads]
+    U --> V[Quantify expression]
+    V --> W[Differential expression<br/>control vs stressors]
+    W --> Y4
+
     Z --> ZA[Later comparative analysis<br/>OrthoFinder and lineage restriction]
     ZA --> ZB[Final shortlist]
 ```
@@ -307,8 +352,7 @@ Any representative gene/protein with convincing support from:
 ### Sequence-supported but lower-confidence
 A protein with:
 - no threshold-passing Swiss-Prot hit
-- but a threshold-passing Cnidaria-TrEMBL hit
-- ideally a non-ambiguous subject description
+- but a threshold-passing Cnidaria-TrEMBL hit with an informative, non-ambiguous subject description
 
 These should be described conservatively and not treated as equivalent to reviewed Swiss-Prot functional assignments.
 
