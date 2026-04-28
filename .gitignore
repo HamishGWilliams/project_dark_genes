@@ -203,3 +203,6 @@ eggnog_data/
 
 # genome_loopkup tables
 06_genome_lookup/*.tsv
+
+# BUSCO duplication context files
+07_duplication_context/*.tsv
