@@ -3,10 +3,10 @@
 #SBATCH --mem=300G
 #SBATCH --partition=uoa-compute
 #SBATCH -N 1
-#SBATCH -n 16
+#SBATCH -n 40
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=r02hw22@abdn.ac.uk
-#SBATCH --time=3-00:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
 
@@ -91,7 +91,7 @@ run_blastp_search () {
       -query "$QUERY" \
       -db "$blast_db" \
       -out "$raw_out_tsv" \
-      -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen" \
+      -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle" \
       -evalue "$EVALUE_THRESHOLD" \
       -num_threads "$THREADS" \
       -max_target_seqs "$TOP_N" \
@@ -99,7 +99,7 @@ run_blastp_search () {
 
     # Post-processing threshold filter.
     # Column 11 is evalue in this outfmt:
-    # qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+    # qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle
     awk -F '\t' -v e="$EVALUE_THRESHOLD" 'BEGIN {OFS="\t"} $11 <= e {print}' \
       "$raw_out_tsv" > "$filtered_out_tsv"
 

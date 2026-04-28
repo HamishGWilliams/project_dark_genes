@@ -188,3 +188,15 @@ eggnog_data/
 *.so
 *.a
 *.o
+
+# DIAMOND large full-output files
+02_annotation/diamond/raw/
+02_annotation/diamond/filtered/*.diamond.tsv
+
+# Keep only compact filtered/top-hit summaries if deliberately added
+!02_annotation/diamond/filtered/*.top_hits.tsv
+!02_annotation/diamond/filtered/*.best_hit*.tsv
+
+# DIAMOND full raw/filtered outputs generated on HPC
+02_annotation/diamond/raw/
+02_annotation/diamond/filtered/*.diamond.tsv

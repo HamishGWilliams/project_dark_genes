@@ -10,8 +10,6 @@
 #SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
 #SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
 
-set -euo pipefail
-
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
 
@@ -70,13 +68,13 @@ run_diamond_search () {
       --query "$QUERY" \
       --db "$db_prefix" \
       --out "$raw_out_tsv" \
-      --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen \
+      --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle \
       --evalue "$EVALUE_THRESHOLD" \
       --threads "$THREADS"
 
     # Post-processing threshold filter.
     # Column 11 is evalue in this outfmt:
-    # qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+    # qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle
     awk -F '\t' -v e="$EVALUE_THRESHOLD" 'BEGIN {OFS="\t"} $11 <= e {print}' \
       "$raw_out_tsv" > "$filtered_out_tsv"
 
