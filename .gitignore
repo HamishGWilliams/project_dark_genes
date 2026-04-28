@@ -200,3 +200,6 @@ eggnog_data/
 # DIAMOND full raw/filtered outputs generated on HPC
 02_annotation/diamond/raw/
 02_annotation/diamond/filtered/*.diamond.tsv
+
+# genome_loopkup tables
+06_genome_lookup/*.tsv
