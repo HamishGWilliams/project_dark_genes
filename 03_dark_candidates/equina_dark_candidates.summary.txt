@@ -1,0 +1,27 @@
+Dark candidate extraction summary
+=================================
+Input TSV: /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/master/full/equina_representative_full.master_annotation.tsv
+Source FASTA: /uoa/scratch/users/r02hw22/project_dark_genes/02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates
+Classification column: annotation_class
+Candidate ID column: protein_id
+Total input rows scanned: 47671
+Total FASTA records indexed: 47671
+Duplicate FASTA aliases ignored: 138296
+Total dark candidates: 4531
+function_dark_but_signalp_secretory_candidate: 0
+function_dark_no_current_annotation: 4531
+Candidates with retained review evidence: 4531
+Evidence columns retained for manual review: 78
+FASTA records written: 4531
+FASTA records written [function_dark_but_signalp_secretory_candidate]: 0
+FASTA records written [function_dark_no_current_annotation]: 4531
+Candidates missing sequences: 0
+
+Outputs:
+- Candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.tsv
+- Manual review evidence TSV: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.manual_review_evidence.tsv
+- Combined FASTA: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.all.fa
+- Class FASTA [function_dark_but_signalp_secretory_candidate]: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.function_dark_but_signalp_secretory_candidate.fa
+- Class FASTA [function_dark_no_current_annotation]: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.function_dark_no_current_annotation.fa
+- Missing sequence report: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.missing_sequences.tsv
