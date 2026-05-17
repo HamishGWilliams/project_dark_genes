@@ -1,0 +1,9 @@
+priority_tier	focal_stress_responsive	n_dark_candidates
+high priority	Not focal stress-responsive	3432
+low priority or manual
+review	Not focal stress-responsive	170
+medium priority	Not focal stress-responsive	375
+high priority	Focal stress-responsive	471
+low priority or manual
+review	Focal stress-responsive	38
+medium priority	Focal stress-responsive	45

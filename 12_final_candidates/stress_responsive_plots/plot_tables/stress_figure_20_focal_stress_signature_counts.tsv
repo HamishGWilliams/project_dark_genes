@@ -1,0 +1,121 @@
+stress_signature	stress_signature_pretty	n_dark_candidates
+combined_wald	Combined	247
+full_model_LRT + combined_wald	Full model + Combined	130
+full_model_LRT	Full model	105
+full_model_LRT + diesel_added_wald	Full model + Diesel added	33
+full_model_LRT + diesel_added_wald + combined_wald	Full model + Diesel added +
+Combined	27
+diesel_added_wald	Diesel added	3
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model + Diesel added +
+Interaction Wald + Interaction LRT	3
+full_model_LRT + interactive_only_wald	Full model + Interaction Wald	3
+diesel_added_wald + combined_wald	Diesel added + Combined	2
+diesel_added_wald + interactive_only_wald	Diesel added + Interaction Wald	1
+diesel_added_wald	Combined	0
+diesel_added_wald + combined_wald	Combined	0
+diesel_added_wald + interactive_only_wald	Combined	0
+full_model_LRT	Combined	0
+full_model_LRT + combined_wald	Combined	0
+full_model_LRT + diesel_added_wald	Combined	0
+full_model_LRT + diesel_added_wald + combined_wald	Combined	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Combined	0
+full_model_LRT + interactive_only_wald	Combined	0
+combined_wald	Diesel added	0
+diesel_added_wald + combined_wald	Diesel added	0
+diesel_added_wald + interactive_only_wald	Diesel added	0
+full_model_LRT	Diesel added	0
+full_model_LRT + combined_wald	Diesel added	0
+full_model_LRT + diesel_added_wald	Diesel added	0
+full_model_LRT + diesel_added_wald + combined_wald	Diesel added	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Diesel added	0
+full_model_LRT + interactive_only_wald	Diesel added	0
+combined_wald	Diesel added + Combined	0
+diesel_added_wald	Diesel added + Combined	0
+diesel_added_wald + interactive_only_wald	Diesel added + Combined	0
+full_model_LRT	Diesel added + Combined	0
+full_model_LRT + combined_wald	Diesel added + Combined	0
+full_model_LRT + diesel_added_wald	Diesel added + Combined	0
+full_model_LRT + diesel_added_wald + combined_wald	Diesel added + Combined	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Diesel added + Combined	0
+full_model_LRT + interactive_only_wald	Diesel added + Combined	0
+combined_wald	Diesel added + Interaction Wald	0
+diesel_added_wald	Diesel added + Interaction Wald	0
+diesel_added_wald + combined_wald	Diesel added + Interaction Wald	0
+full_model_LRT	Diesel added + Interaction Wald	0
+full_model_LRT + combined_wald	Diesel added + Interaction Wald	0
+full_model_LRT + diesel_added_wald	Diesel added + Interaction Wald	0
+full_model_LRT + diesel_added_wald + combined_wald	Diesel added + Interaction Wald	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Diesel added + Interaction Wald	0
+full_model_LRT + interactive_only_wald	Diesel added + Interaction Wald	0
+combined_wald	Full model	0
+diesel_added_wald	Full model	0
+diesel_added_wald + combined_wald	Full model	0
+diesel_added_wald + interactive_only_wald	Full model	0
+full_model_LRT + combined_wald	Full model	0
+full_model_LRT + diesel_added_wald	Full model	0
+full_model_LRT + diesel_added_wald + combined_wald	Full model	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model	0
+full_model_LRT + interactive_only_wald	Full model	0
+combined_wald	Full model + Combined	0
+diesel_added_wald	Full model + Combined	0
+diesel_added_wald + combined_wald	Full model + Combined	0
+diesel_added_wald + interactive_only_wald	Full model + Combined	0
+full_model_LRT	Full model + Combined	0
+full_model_LRT + diesel_added_wald	Full model + Combined	0
+full_model_LRT + diesel_added_wald + combined_wald	Full model + Combined	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model + Combined	0
+full_model_LRT + interactive_only_wald	Full model + Combined	0
+combined_wald	Full model + Diesel added	0
+diesel_added_wald	Full model + Diesel added	0
+diesel_added_wald + combined_wald	Full model + Diesel added	0
+diesel_added_wald + interactive_only_wald	Full model + Diesel added	0
+full_model_LRT	Full model + Diesel added	0
+full_model_LRT + combined_wald	Full model + Diesel added	0
+full_model_LRT + diesel_added_wald + combined_wald	Full model + Diesel added	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model + Diesel added	0
+full_model_LRT + interactive_only_wald	Full model + Diesel added	0
+combined_wald	Full model + Diesel added +
+Combined	0
+diesel_added_wald	Full model + Diesel added +
+Combined	0
+diesel_added_wald + combined_wald	Full model + Diesel added +
+Combined	0
+diesel_added_wald + interactive_only_wald	Full model + Diesel added +
+Combined	0
+full_model_LRT	Full model + Diesel added +
+Combined	0
+full_model_LRT + combined_wald	Full model + Diesel added +
+Combined	0
+full_model_LRT + diesel_added_wald	Full model + Diesel added +
+Combined	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model + Diesel added +
+Combined	0
+full_model_LRT + interactive_only_wald	Full model + Diesel added +
+Combined	0
+combined_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+diesel_added_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+diesel_added_wald + combined_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+diesel_added_wald + interactive_only_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+full_model_LRT	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+full_model_LRT + combined_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+full_model_LRT + diesel_added_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+full_model_LRT + diesel_added_wald + combined_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+full_model_LRT + interactive_only_wald	Full model + Diesel added +
+Interaction Wald + Interaction LRT	0
+combined_wald	Full model + Interaction Wald	0
+diesel_added_wald	Full model + Interaction Wald	0
+diesel_added_wald + combined_wald	Full model + Interaction Wald	0
+diesel_added_wald + interactive_only_wald	Full model + Interaction Wald	0
+full_model_LRT	Full model + Interaction Wald	0
+full_model_LRT + combined_wald	Full model + Interaction Wald	0
+full_model_LRT + diesel_added_wald	Full model + Interaction Wald	0
+full_model_LRT + diesel_added_wald + combined_wald	Full model + Interaction Wald	0
+full_model_LRT + diesel_added_wald + interactive_only_wald + interactive_only_LRT	Full model + Interaction Wald	0

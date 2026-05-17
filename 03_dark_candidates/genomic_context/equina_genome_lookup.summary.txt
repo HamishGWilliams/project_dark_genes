@@ -1,0 +1,44 @@
+Genome-aware dark candidate lookup summary
+==========================================
+GFF3: /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/combined_annotations.gff3
+Candidate TSV: 03_dark_candidates/equina_dark_candidates.tsv
+Output directory: 03_dark_candidates/genomic_context
+
+Detected candidate columns:
+- Candidate ID column: protein_id
+- Candidate class column: annotation_class
+
+GFF3 parsed counts:
+- Genes parsed: 55651
+- Transcripts parsed: 127174
+- Lookup rows written: 127174
+- Indexed match aliases: 327937
+
+Candidate linking:
+- Candidate rows read: 4531
+- Linked output rows: 574504
+- Unmatched candidates: 0
+- matched_multiple: 4531
+
+Most common GFF3 feature types:
+- dispersed_repeat: 978221
+- exon: 383432
+- cds: 369523
+- mrna: 55607
+- protein: 55607
+- promoter: 47671
+- gene: 47671
+- downstream_region: 47671
+- five_prime_utr: 23401
+- three_prime_utr: 23356
+- ncrna_gene: 7980
+- trna: 6887
+- rrna: 1093
+
+Outputs:
+- GFF3 lookup table: 03_dark_candidates/genomic_context/equina_gff3_gene_transcript_protein_contig_lookup.tsv
+- Genome-linked dark candidates: 03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv
+- Genome-unmatched dark candidates: 03_dark_candidates/genomic_context/equina_dark_candidates.genome_unmatched.tsv
+- Gene-level dark candidate summary: 03_dark_candidates/genomic_context/equina_dark_candidates.genome_summary_by_gene.tsv
+- Scaffold-level dark candidate summary: 03_dark_candidates/genomic_context/equina_dark_candidates.summary_by_scaffold.tsv
+- Summary: 03_dark_candidates/genomic_context/equina_genome_lookup.summary.txt

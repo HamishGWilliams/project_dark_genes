@@ -1,14 +1,4 @@
-#!/bin/bash
-#SBATCH --job-name=qc_master_full
-#SBATCH --mem=64G
-#SBATCH --partition=uoa-compute
-#SBATCH -N 1
-#SBATCH -n 4
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=r02hw22@abdn.ac.uk
-#SBATCH --time=06:00:00
-#SBATCH --output=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/outputs/%x_%j.out
-#SBATCH --error=/uoa/home/r02hw22/sharedscratch/project_dark_genes/logs/errors/%x_%j.err
+#!/usr/bin/env bash
 
 PROJECT_DIR="/uoa/home/r02hw22/sharedscratch/project_dark_genes"
 cd "$PROJECT_DIR"
@@ -16,16 +6,16 @@ cd "$PROJECT_DIR"
 MASTER="02_annotation/master/full/equina_representative_full.master_annotation.tsv"
 SUMMARY="02_annotation/master/full/equina_representative_full.master_annotation.summary.txt"
 
-FASTA="02_annotation/input/equina_representative_longest_per_gene.no_stop.fa"
+FASTA="02_annotation/eggnog/test_input/equina_representative_full.no_stop.fa"
 REP_LOOKUP="01_qc/isoforms/representative_longest_protein_per_gene.tsv"
 
-DIAMOND_SWISSPROT="02_annotation/diamond/filtered/equina_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv"
-DIAMOND_TREMBL_CNIDARIA="02_annotation/diamond/filtered/equina_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv"
+DIAMOND_SWISSPROT="02_annotation/diamond/filtered/equina_full_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv"
+DIAMOND_TREMBL_CNIDARIA="02_annotation/diamond/filtered/equina_full_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv"
 
-BLASTP_SWISSPROT="02_annotation/blastp/filtered/equina_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv"
-BLASTP_TREMBL_CNIDARIA="02_annotation/blastp/filtered/equina_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv"
+BLASTP_SWISSPROT="02_annotation/blastp/filtered/equina_full_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv"
+BLASTP_TREMBL_CNIDARIA="02_annotation/blastp/filtered/equina_full_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv"
 
-INTERPROSCAN="02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan.tsv"
+INTERPROSCAN="02_annotation/interproscan/raw/equina_representative_full.interproscan.tsv"
 EGGNOG="02_annotation/eggnog/raw/equina_representative_full.emapper.annotations"
 SIGNALP="02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv"
 
@@ -33,36 +23,11 @@ QC_DIR="02_annotation/master/full/qc"
 REPORT="${QC_DIR}/equina_representative_full.master_annotation.qc_report.txt"
 
 mkdir -p "$QC_DIR"
-mkdir -p logs/outputs
-mkdir -p logs/errors
 
-module load python/3.11.9 || module load python/3.9.12 || true
-PYTHON_BIN="$(command -v python3 || command -v python)"
-
-echo "========================================"
-echo "Full master annotation QC"
-echo "Started: $(date)"
-echo "Host: $(hostname)"
-echo "Project: $PROJECT_DIR"
-echo "Python: $PYTHON_BIN"
-"$PYTHON_BIN" --version
-echo "========================================"
-
-"$PYTHON_BIN" - <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 import csv
-import sys
 from collections import defaultdict, Counter
-
-
-max_csv_field_size = sys.maxsize
-
-while True:
-    try:
-        csv.field_size_limit(max_csv_field_size)
-        break
-    except OverflowError:
-        max_csv_field_size = int(max_csv_field_size / 10)
 
 
 PROJECT_DIR = Path("/uoa/home/r02hw22/sharedscratch/project_dark_genes")
@@ -70,16 +35,16 @@ PROJECT_DIR = Path("/uoa/home/r02hw22/sharedscratch/project_dark_genes")
 MASTER = Path("02_annotation/master/full/equina_representative_full.master_annotation.tsv")
 SUMMARY = Path("02_annotation/master/full/equina_representative_full.master_annotation.summary.txt")
 
-FASTA = Path("02_annotation/input/equina_representative_longest_per_gene.no_stop.fa")
+FASTA = Path("02_annotation/eggnog/test_input/equina_representative_full.no_stop.fa")
 REP_LOOKUP = Path("01_qc/isoforms/representative_longest_protein_per_gene.tsv")
 
-DIAMOND_SWISSPROT = Path("02_annotation/diamond/filtered/equina_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv")
-DIAMOND_TREMBL_CNIDARIA = Path("02_annotation/diamond/filtered/equina_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv")
+DIAMOND_SWISSPROT = Path("02_annotation/diamond/filtered/equina_full_vs_swissprot_all_representative.evalue_1e-5.top_hits.tsv")
+DIAMOND_TREMBL_CNIDARIA = Path("02_annotation/diamond/filtered/equina_full_vs_trembl_cnidaria_selected_representative.evalue_1e-5.top_hits.tsv")
 
-BLASTP_SWISSPROT = Path("02_annotation/blastp/filtered/equina_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv")
-BLASTP_TREMBL_CNIDARIA = Path("02_annotation/blastp/filtered/equina_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv")
+BLASTP_SWISSPROT = Path("02_annotation/blastp/filtered/equina_full_vs_swissprot_all.evalue_1e-5.best_hit_representative.tsv")
+BLASTP_TREMBL_CNIDARIA = Path("02_annotation/blastp/filtered/equina_full_vs_trembl_cnidaria_selected.evalue_1e-5.best_hit_representative.tsv")
 
-INTERPROSCAN = Path("02_annotation/interproscan/raw/equina_representative_longest_per_gene.interproscan.tsv")
+INTERPROSCAN = Path("02_annotation/interproscan/raw/equina_representative_full.interproscan.tsv")
 EGGNOG = Path("02_annotation/eggnog/raw/equina_representative_full.emapper.annotations")
 SIGNALP = Path("02_annotation/signalp/summary/equina_representative_full.signalp5_summary.tsv")
 
@@ -95,21 +60,6 @@ ANNOTATION_CLASS_ORDER = [
     "orthology_supported_eggnog",
     "function_dark_but_signalp_secretory_candidate",
     "function_dark_no_current_annotation",
-]
-
-AMBIGUOUS_DESCRIPTION_TERMS = [
-    "uncharacterized protein",
-    "uncharacterised protein",
-    "putative uncharacterized protein",
-    "putative uncharacterised protein",
-    "hypothetical protein",
-    "predicted protein",
-    "expressed protein",
-    "unnamed protein product",
-    "unknown protein",
-    "protein of unknown function",
-    "conserved hypothetical protein",
-    "hypothetical conserved protein",
 ]
 
 
@@ -130,36 +80,13 @@ def format_float(value, digits=4):
     return f"{value:.{digits}f}"
 
 
-def clean_description(description):
-    return " ".join(description.strip().split())
-
-
-def assess_description_informativeness(description):
-    description = clean_description(description)
-
-    if not description:
-        return "unknown", "no_description", "no"
-
-    lower = description.lower()
-
-    for term in AMBIGUOUS_DESCRIPTION_TERMS:
-        if term in lower:
-            return "yes", term, "no"
-
-    return "no", "", "yes"
-
-
-def write_tsv_file(name, rows, header):
+def write_mismatch_file(name, rows, header):
     path = QC_DIR / name
     with path.open("w", newline="") as fh:
         writer = csv.writer(fh, delimiter="\t")
         writer.writerow(header)
         writer.writerows(rows)
     return path
-
-
-def write_mismatch_file(name, rows, header):
-    return write_tsv_file(name, rows, header)
 
 
 def read_fasta_ids(path):
@@ -236,6 +163,13 @@ def load_representative_lookup(path):
 
 
 def scan_homology_file_for_evalue_failures(path, source_name):
+    """
+    Scan every row in a homology source file and report any row that does not
+    pass the paper-aligned e-value threshold.
+
+    Expected columns:
+    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+    """
     failures = []
 
     if not exists_nonempty(path):
@@ -289,11 +223,14 @@ def scan_homology_file_for_evalue_failures(path, source_name):
 
 def load_top_hits(path):
     """
-    Preferred columns:
-    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle
+    DIAMOND / BLASTp filtered top-hit table.
 
-    Legacy 14-column and 12-column files are tolerated, but description/informative
-    checks require the stitle column.
+    Preferred outfmt 6 columns:
+    qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
+
+    Legacy 12-column files are tolerated, but qlen/slen/coverage fields will be blank.
+
+    Only threshold-passing hits are loaded.
     """
     hits = {}
 
@@ -323,7 +260,6 @@ def load_top_hits(path):
             aln_length = parts[3]
             qlen = parts[12] if len(parts) > 12 else ""
             slen = parts[13] if len(parts) > 13 else ""
-            description = clean_description("\t".join(parts[14:])) if len(parts) > 14 else ""
 
             aln_length_float = parse_float(aln_length)
             qlen_float = parse_float(qlen)
@@ -338,10 +274,6 @@ def load_top_hits(path):
             if aln_length_float is not None and slen_float not in (None, 0):
                 subject_coverage = aln_length_float / slen_float
 
-            description_is_ambiguous, ambiguity_reason, informative_hit = assess_description_informativeness(
-                description
-            )
-
             if qid not in hits:
                 hits[qid] = {
                     "subject": parts[1],
@@ -354,10 +286,6 @@ def load_top_hits(path):
                     "query_coverage": format_float(query_coverage),
                     "subject_coverage": format_float(subject_coverage),
                     "evalue_pass": "yes",
-                    "description": description,
-                    "description_is_ambiguous": description_is_ambiguous,
-                    "description_ambiguity_reason": ambiguity_reason,
-                    "informative_hit": informative_hit,
                 }
 
     return hits
@@ -563,28 +491,25 @@ def load_signalp(path):
 
 
 def expected_class(row):
-    if row.get("diamond_swissprot_hit") == "yes" or row.get("blastp_swissprot_hit") == "yes":
+    if row["diamond_swissprot_hit"] == "yes" or row["blastp_swissprot_hit"] == "yes":
         return "annotated_swissprot_supported"
 
-    if (
-        row.get("diamond_trembl_cnidaria_informative_hit") == "yes"
-        or row.get("blastp_trembl_cnidaria_informative_hit") == "yes"
-    ):
+    if row["diamond_trembl_cnidaria_hit"] == "yes" or row["blastp_trembl_cnidaria_hit"] == "yes":
         return "sequence_supported_trembl_cnidaria"
 
-    if row.get("interpro_hit") == "yes":
+    if row["interpro_hit"] == "yes":
         return "domain_supported_interpro"
 
-    if row.get("eggnog_hit") == "yes":
+    if row["eggnog_hit"] == "yes":
         return "orthology_supported_eggnog"
 
-    if row.get("signalp_positive") == "yes":
+    if row["signalp_positive"] == "yes":
         return "function_dark_but_signalp_secretory_candidate"
 
     return "function_dark_no_current_annotation"
 
 
-def compare_hit_source(master_by_id, source_hits, source_name, master_prefix, is_trembl=False):
+def compare_hit_source(master_by_id, source_hits, source_name, master_prefix):
     mismatches = []
 
     for pid in sorted(master_by_id):
@@ -612,17 +537,7 @@ def compare_hit_source(master_by_id, source_hits, source_name, master_prefix, is
                 "query_coverage": f"{master_prefix}_query_coverage",
                 "subject_coverage": f"{master_prefix}_subject_coverage",
                 "evalue_pass": f"{master_prefix}_evalue_pass",
-                "description": f"{master_prefix}_description",
             }
-
-            if is_trembl:
-                field_map.update(
-                    {
-                        "description_is_ambiguous": f"{master_prefix}_description_is_ambiguous",
-                        "description_ambiguity_reason": f"{master_prefix}_description_ambiguity_reason",
-                        "informative_hit": f"{master_prefix}_informative_hit",
-                    }
-                )
 
             for source_field, master_field in field_map.items():
                 expected_value = source.get(source_field, "")
@@ -772,142 +687,6 @@ def parse_summary_counts(summary_path):
                         pass
 
     return counts
-
-
-def build_trembl_ambiguity_qc(master_rows):
-    ambiguous_rows = []
-    annotation_violations = []
-    inconsistent_flags = []
-
-    any_trembl_hit = 0
-    any_informative_trembl = 0
-    any_ambiguous_trembl = 0
-    sequence_supported = 0
-    sequence_supported_without_informative = 0
-    sequence_supported_with_ambiguous_present = 0
-
-    diamond_ambiguous = 0
-    blastp_ambiguous = 0
-    diamond_informative = 0
-    blastp_informative = 0
-
-    for row in master_rows:
-        pid = row.get("protein_id", "")
-        annotation_class = row.get("annotation_class", "")
-
-        d_hit = row.get("diamond_trembl_cnidaria_hit", "no") == "yes"
-        b_hit = row.get("blastp_trembl_cnidaria_hit", "no") == "yes"
-
-        d_amb = row.get("diamond_trembl_cnidaria_description_is_ambiguous", "") == "yes"
-        b_amb = row.get("blastp_trembl_cnidaria_description_is_ambiguous", "") == "yes"
-
-        d_info = row.get("diamond_trembl_cnidaria_informative_hit", "no") == "yes"
-        b_info = row.get("blastp_trembl_cnidaria_informative_hit", "no") == "yes"
-
-        has_trembl_hit = d_hit or b_hit
-        has_ambiguous = d_amb or b_amb
-        has_informative = d_info or b_info
-
-        if has_trembl_hit:
-            any_trembl_hit += 1
-
-        if has_ambiguous:
-            any_ambiguous_trembl += 1
-
-            ambiguous_rows.append([
-                pid,
-                annotation_class,
-                row.get("diamond_trembl_cnidaria_hit", ""),
-                row.get("diamond_trembl_cnidaria_subject", ""),
-                row.get("diamond_trembl_cnidaria_description", ""),
-                row.get("diamond_trembl_cnidaria_description_is_ambiguous", ""),
-                row.get("diamond_trembl_cnidaria_description_ambiguity_reason", ""),
-                row.get("diamond_trembl_cnidaria_informative_hit", ""),
-                row.get("blastp_trembl_cnidaria_hit", ""),
-                row.get("blastp_trembl_cnidaria_subject", ""),
-                row.get("blastp_trembl_cnidaria_description", ""),
-                row.get("blastp_trembl_cnidaria_description_is_ambiguous", ""),
-                row.get("blastp_trembl_cnidaria_description_ambiguity_reason", ""),
-                row.get("blastp_trembl_cnidaria_informative_hit", ""),
-            ])
-
-        if has_informative:
-            any_informative_trembl += 1
-
-        if d_amb:
-            diamond_ambiguous += 1
-
-        if b_amb:
-            blastp_ambiguous += 1
-
-        if d_info:
-            diamond_informative += 1
-
-        if b_info:
-            blastp_informative += 1
-
-        if annotation_class == "sequence_supported_trembl_cnidaria":
-            sequence_supported += 1
-
-            if has_ambiguous:
-                sequence_supported_with_ambiguous_present += 1
-
-            if not has_informative:
-                sequence_supported_without_informative += 1
-                annotation_violations.append([
-                    pid,
-                    annotation_class,
-                    row.get("diamond_trembl_cnidaria_hit", ""),
-                    row.get("diamond_trembl_cnidaria_subject", ""),
-                    row.get("diamond_trembl_cnidaria_description", ""),
-                    row.get("diamond_trembl_cnidaria_description_is_ambiguous", ""),
-                    row.get("diamond_trembl_cnidaria_informative_hit", ""),
-                    row.get("blastp_trembl_cnidaria_hit", ""),
-                    row.get("blastp_trembl_cnidaria_subject", ""),
-                    row.get("blastp_trembl_cnidaria_description", ""),
-                    row.get("blastp_trembl_cnidaria_description_is_ambiguous", ""),
-                    row.get("blastp_trembl_cnidaria_informative_hit", ""),
-                ])
-
-        for prefix in ["diamond_trembl_cnidaria", "blastp_trembl_cnidaria"]:
-            hit = row.get(f"{prefix}_hit", "no") == "yes"
-            is_ambiguous = row.get(f"{prefix}_description_is_ambiguous", "")
-            informative = row.get(f"{prefix}_informative_hit", "no")
-
-            if hit and is_ambiguous == "yes" and informative == "yes":
-                inconsistent_flags.append([
-                    pid,
-                    prefix,
-                    "ambiguous_description_marked_informative",
-                    row.get(f"{prefix}_description", ""),
-                    is_ambiguous,
-                    informative,
-                ])
-
-            if hit and is_ambiguous in {"unknown", "yes"} and informative == "yes":
-                inconsistent_flags.append([
-                    pid,
-                    prefix,
-                    "unknown_or_ambiguous_description_marked_informative",
-                    row.get(f"{prefix}_description", ""),
-                    is_ambiguous,
-                    informative,
-                ])
-
-    summary_rows = [
-        ["proteins_with_any_trembl_hit", any_trembl_hit],
-        ["proteins_with_any_informative_trembl_hit", any_informative_trembl],
-        ["proteins_with_any_ambiguous_trembl_description", any_ambiguous_trembl],
-        ["diamond_trembl_ambiguous_descriptions", diamond_ambiguous],
-        ["blastp_trembl_ambiguous_descriptions", blastp_ambiguous],
-        ["diamond_trembl_informative_hits", diamond_informative],
-        ["blastp_trembl_informative_hits", blastp_informative],
-        ["sequence_supported_trembl_cnidaria_total", sequence_supported],
-        ["sequence_supported_with_ambiguous_trembl_present_review_only", sequence_supported_with_ambiguous_present],
-        ["sequence_supported_without_informative_trembl_violation", sequence_supported_without_informative],
-    ]
-
-    return summary_rows, ambiguous_rows, annotation_violations, inconsistent_flags
 
 
 def main():
@@ -1087,7 +866,6 @@ def main():
             diamond_swiss,
             "diamond_swissprot",
             "diamond_swissprot",
-            is_trembl=False,
         )
     )
 
@@ -1097,7 +875,6 @@ def main():
             diamond_trembl,
             "diamond_trembl_cnidaria",
             "diamond_trembl_cnidaria",
-            is_trembl=True,
         )
     )
 
@@ -1107,7 +884,6 @@ def main():
             blastp_swiss,
             "blastp_swissprot",
             "blastp_swissprot",
-            is_trembl=False,
         )
     )
 
@@ -1117,7 +893,6 @@ def main():
             blastp_trembl,
             "blastp_trembl_cnidaria",
             "blastp_trembl_cnidaria",
-            is_trembl=True,
         )
     )
 
@@ -1131,79 +906,6 @@ def main():
         "diamond_blastp_fields_match_sources",
         len(homology_mismatches) == 0,
         f"mismatches={len(homology_mismatches)}",
-    )
-
-    trembl_summary_rows, trembl_ambiguous_rows, trembl_annotation_violations, trembl_flag_inconsistencies = build_trembl_ambiguity_qc(master_rows)
-
-    write_tsv_file(
-        "trembl_ambiguity_summary.tsv",
-        trembl_summary_rows,
-        ["metric", "count"],
-    )
-
-    write_tsv_file(
-        "trembl_ambiguous_hits.tsv",
-        trembl_ambiguous_rows,
-        [
-            "protein_id",
-            "annotation_class",
-            "diamond_trembl_hit",
-            "diamond_trembl_subject",
-            "diamond_trembl_description",
-            "diamond_trembl_description_is_ambiguous",
-            "diamond_trembl_ambiguity_reason",
-            "diamond_trembl_informative_hit",
-            "blastp_trembl_hit",
-            "blastp_trembl_subject",
-            "blastp_trembl_description",
-            "blastp_trembl_description_is_ambiguous",
-            "blastp_trembl_ambiguity_reason",
-            "blastp_trembl_informative_hit",
-        ],
-    )
-
-    write_mismatch_file(
-        "trembl_ambiguous_annotation_violations.tsv",
-        trembl_annotation_violations,
-        [
-            "protein_id",
-            "annotation_class",
-            "diamond_trembl_hit",
-            "diamond_trembl_subject",
-            "diamond_trembl_description",
-            "diamond_trembl_description_is_ambiguous",
-            "diamond_trembl_informative_hit",
-            "blastp_trembl_hit",
-            "blastp_trembl_subject",
-            "blastp_trembl_description",
-            "blastp_trembl_description_is_ambiguous",
-            "blastp_trembl_informative_hit",
-        ],
-    )
-
-    write_mismatch_file(
-        "trembl_informative_flag_inconsistencies.tsv",
-        trembl_flag_inconsistencies,
-        [
-            "protein_id",
-            "source",
-            "problem",
-            "description",
-            "description_is_ambiguous",
-            "informative_hit",
-        ],
-    )
-
-    add_check(
-        "trembl_ambiguous_hits_do_not_drive_sequence_supported_annotation",
-        len(trembl_annotation_violations) == 0,
-        f"violations={len(trembl_annotation_violations)}",
-    )
-
-    add_check(
-        "trembl_informative_flags_are_consistent",
-        len(trembl_flag_inconsistencies) == 0,
-        f"inconsistencies={len(trembl_flag_inconsistencies)}",
     )
 
     interpro = load_interproscan(INTERPROSCAN)
@@ -1309,11 +1011,7 @@ def main():
         ("diamond_swissprot_hit", yes_count("diamond_swissprot_hit")),
         ("blastp_swissprot_hit", yes_count("blastp_swissprot_hit")),
         ("diamond_trembl_cnidaria_hit", yes_count("diamond_trembl_cnidaria_hit")),
-        ("diamond_trembl_cnidaria_informative_hit", yes_count("diamond_trembl_cnidaria_informative_hit")),
-        ("diamond_trembl_cnidaria_description_is_ambiguous", yes_count("diamond_trembl_cnidaria_description_is_ambiguous")),
         ("blastp_trembl_cnidaria_hit", yes_count("blastp_trembl_cnidaria_hit")),
-        ("blastp_trembl_cnidaria_informative_hit", yes_count("blastp_trembl_cnidaria_informative_hit")),
-        ("blastp_trembl_cnidaria_description_is_ambiguous", yes_count("blastp_trembl_cnidaria_description_is_ambiguous")),
         ("interpro_hit", yes_count("interpro_hit")),
         ("eggnog_hit", yes_count("eggnog_hit")),
         ("signalp_positive", yes_count("signalp_positive")),
@@ -1343,8 +1041,8 @@ def main():
     )
 
     with REPORT.open("w") as fh:
-        fh.write("Full master annotation QC report\n")
-        fh.write("================================\n\n")
+        fh.write("Master annotation QC report\n")
+        fh.write("===========================\n\n")
         fh.write(f"Master table: {MASTER}\n")
         fh.write(f"Summary file: {SUMMARY}\n")
         fh.write(f"FASTA row universe: {FASTA}\n")
@@ -1374,13 +1072,6 @@ def main():
         for row in coverage_rows:
             fh.write("\t".join(map(str, row)) + "\n")
 
-        fh.write("\nTrEMBL ambiguity summary\n")
-        fh.write("------------------------\n")
-        fh.write("metric\tcount\n")
-
-        for row in trembl_summary_rows:
-            fh.write("\t".join(map(str, row)) + "\n")
-
         fh.write("\nMismatch files\n")
         fh.write("--------------\n")
 
@@ -1390,20 +1081,6 @@ def main():
 
             n_records = max(0, n_lines - 1)
             fh.write(f"{path}\t{n_records} records\n")
-
-        fh.write("\nTrEMBL ambiguity review files\n")
-        fh.write("-----------------------------\n")
-        for path in [
-            QC_DIR / "trembl_ambiguity_summary.tsv",
-            QC_DIR / "trembl_ambiguous_hits.tsv",
-            QC_DIR / "trembl_ambiguous_annotation_violations.tsv",
-            QC_DIR / "trembl_informative_flag_inconsistencies.tsv",
-        ]:
-            if path.exists():
-                with path.open() as check_fh:
-                    n_lines = sum(1 for _ in check_fh)
-                n_records = max(0, n_lines - 1)
-                fh.write(f"{path}\t{n_records} records\n")
 
     print(f"Wrote QC report: {REPORT}")
     print(f"Failed checks: {failed_checks}")
@@ -1425,8 +1102,5 @@ if [[ -f "$REPORT" ]]; then
 else
     echo "QC report was not created: $REPORT"
 fi
-
-echo
-echo "Finished: $(date)"
 
 exit "$python_status"

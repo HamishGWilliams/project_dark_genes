@@ -1,0 +1,35 @@
+Stress-responsive dark-gene plot summary
+========================================
+DE context table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_context.tsv
+Significant DE table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_significant_long.tsv
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots
+Candidates read: 4531
+Significant DE rows read: 1723
+Unique significant dark candidates: 726
+Unique focal stress-responsive dark candidates: 554
+Diesel-added significant dark candidates: 69
+
+Layout settings:
+- bbplot/BBC styling applied when available
+- final theme layer scales text down for crowded biological labels
+- long category labels are wrapped before plotting
+- plot canvases are exported wider than the first version
+
+Contrast counts:
+- diesel_added_wald: 69
+- combined_wald: 406
+- full_model_LRT: 301
+- interactive_only_wald: 7
+- interactive_only_LRT: 3
+- salinity_added_wald: 398
+- salinity_only_wald: 270
+- salinity_only_LRT: 269
+
+Plot files:
+- stress_figure_16_de_candidates_by_contrast: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_16_de_candidates_by_contrast.png
+- stress_figure_17_de_direction_by_contrast: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_17_de_direction_by_contrast.png
+- stress_figure_18_priority_vs_focal_stress: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_18_priority_vs_focal_stress.png
+- stress_figure_19_repeat_context_vs_focal_stress: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_19_repeat_context_vs_focal_stress.png
+- stress_figure_20_focal_stress_signature_combinations: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_20_focal_stress_signature_combinations.png
+- stress_figure_21_diesel_added_dark_gene_response: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_21_diesel_added_dark_gene_response.png
+- stress_figure_22_dark_gene_evidence_stack: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/stress_responsive_plots/stress_figure_22_dark_gene_evidence_stack.png

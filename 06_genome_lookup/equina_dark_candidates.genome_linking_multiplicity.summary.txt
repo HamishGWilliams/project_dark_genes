@@ -1,0 +1,46 @@
+Genome-linking multiplicity QC
+==============================
+Input linked TSV: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.tsv
+Candidate ID column: protein_id
+Total linked rows read: 574504
+Unique candidate IDs: 4531
+Primary rows written: 4531
+
+Primary mapping status counts:
+- matched_primary_from_multiple_strict: 4531
+
+Primary rank counts:
+- rank_1: 4531
+
+Multiplicity distribution:
+- 2 linked rows: 713 candidates
+- 4 linked rows: 43 candidates
+- 6 linked rows: 17 candidates
+- 7 linked rows: 1 candidates
+- 8 linked rows: 29 candidates
+- 10 linked rows: 39 candidates
+- 12 linked rows: 43 candidates
+- 13 linked rows: 1 candidates
+- 14 linked rows: 30 candidates
+- 15 linked rows: 2 candidates
+- 16 linked rows: 37 candidates
+- 17 linked rows: 1 candidates
+- 18 linked rows: 39 candidates
+- 19 linked rows: 6 candidates
+- 20 linked rows: 28 candidates
+- 21 linked rows: 5 candidates
+- 22 linked rows: 30 candidates
+- 24 linked rows: 35 candidates
+- 25 linked rows: 2 candidates
+- 26 linked rows: 36 candidates
+- 27 linked rows: 2 candidates
+- 28 linked rows: 50 candidates
+- 29 linked rows: 2 candidates
+- 30 linked rows: 48 candidates
+- 32 linked rows: 41 candidates
+- additional multiplicity bins omitted from text summary; see TSV.
+
+Outputs:
+- Primary one-row-per-candidate table: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
+- Multiplicity table: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linking_multiplicity.tsv
+- Summary: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linking_multiplicity.summary.txt

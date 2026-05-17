@@ -1,0 +1,44 @@
+Final dark-candidate synthesis summary
+======================================
+DE context table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_context.tsv
+Significant DE long table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_significant_long.tsv
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates
+Candidate rows read: 4531
+Significant-DE candidate IDs indexed: 726
+Shortlist rows written: 250
+Stress contrast scope: all
+Stress contrasts used: combined_wald,diesel_added_wald,full_model_LRT,interactive_only_LRT,interactive_only_wald,salinity_added_wald,salinity_only_LRT,salinity_only_wald
+
+Final shortlist category counts:
+- retain_context_only: 3767
+- top_stress_responsive_dark_candidate: 684
+- stress_responsive_dark_candidate: 67
+- strong_stress_responsive_dark_candidate: 13
+
+Priority tier counts in input:
+- high_priority: 3903
+- medium_priority: 420
+- low_priority_or_manual_review: 208
+
+Most common shortlist evidence reasons:
+- no_DMR_overlap: 4531
+- high_priority: 3903
+- repeat_TE_overlap_context: 3329
+- single_copy_or_no_near_identical_dark_duplicate: 2926
+- possible_biological_gene_family_expansion: 1385
+- no_repeat_TE_overlap: 1202
+- DE_significant_any_contrast: 764
+- stress_contrast_DE: 764
+- medium_priority: 420
+- abs_logFC_ge_2: 283
+- padj_le_0.001: 235
+- padj_le_0.01: 227
+- assembly_redundancy_or_haplotig_caution: 220
+- low_priority_or_manual_review: 208
+- abs_logFC_ge_1.5: 193
+- diesel_added_DE: 69
+
+Outputs:
+- Final integrated table: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/equina_dark_candidates.final_integrated.tsv
+- Final shortlist table: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/equina_dark_candidates.final_shortlist.tsv
+- Summary: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candidates/equina_dark_candidates.final_summary.txt

@@ -1,0 +1,9 @@
+contrast	contrast_pretty	n_dark_candidates
+diesel_added_wald	Diesel added Wald	69
+combined_wald	Combined Wald	406
+full_model_LRT	full model LRT	301
+interactive_only_wald	Interaction only Wald	7
+interactive_only_LRT	Interaction only LRT	3
+salinity_added_wald	Salinity added Wald	398
+salinity_only_wald	Salinity only Wald	270
+salinity_only_LRT	Salinity only LRT	269
