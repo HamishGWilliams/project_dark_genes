@@ -1,0 +1,27 @@
+Dark candidate DMR-overlap summary
+==================================
+Candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
+DMR intervals: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/exp2_DMRs.txt
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/exp2_primed_acclimated_diesel
+Candidate rows read: 4531
+
+Detected DMR columns/settings:
+- dmr_format_used: tsv
+- dmr_contig_column: seqnames
+- dmr_start_column: start
+- dmr_end_column: end
+- dmr_id_column: ID
+- dmr_effect_column: meth.diff
+
+DMR parse counts:
+- bad_coordinates: 22813
+- DMR contigs indexed: 0
+
+DMR-overlap status counts:
+- no_dmr_overlap: 4531
+
+DMR effect counts among overlaps:
+
+Outputs:
+- Candidate DMR-overlap table: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.tsv
+- Summary: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.summary.txt
