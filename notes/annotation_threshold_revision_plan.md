@@ -2,19 +2,20 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has now been pushed successfully with the large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, first-pass genome linking, and first-pass figure generation are complete enough to continue.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, first-pass genome linking, first-pass figure generation, and genome-linking multiplicity QC are now complete.
 
-The active issue remains genome-linking multiplicity: all 4,531 dark candidates were linked to the genome, but the current full genome-linked table contains many-to-many matches and should be collapsed/QC-checked before interpreting scaffold, exon/span, BUSCO-duplication, cluster, and priority-tier figures.
+The active issue is now figure/prioritisation regeneration: the multiplicity QC produced a clean one-row-per-candidate primary genome-linking table, but the committed first-pass figure tables still reflect the pre-collapse many-to-many linked table. Figures 05–15 and priority summaries should therefore be regenerated from the primary mapping table before biological interpretation.
 
 ## Repository status
 
-Checked after the successful push:
+Checked after the successful push and multiplicity-QC update:
 
 - Branch: `revise-homology-filtering`
 - Remote branch visible on GitHub: yes
 - Large rejected full genome-linked table removed from pushed diff: yes
 - Full generated table remains local/generated and ignored: `03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv`
 - First-pass genome-linking summary is tracked.
+- Multiplicity-QC summary is tracked.
 - Figure outputs, figure manifest, compact figure tables, scripts, and notes are tracked.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
@@ -97,19 +98,25 @@ Unmatched candidates: 0
 matched_multiple: 4531
 ```
 
-Interpretation: every dark candidate found at least one genome match, but the mapping is currently many-to-many and inflates downstream linked-row counts.
+Interpretation: every dark candidate found at least one genome match, but the first-pass table is many-to-many and inflates downstream linked-row counts.
 
-## Active issue: genome-linking multiplicity
+### Genome-linking multiplicity QC
 
-The current genome-linked table should not yet be used directly for final scaffold, exon/span, BUSCO-duplication, cluster, or priority-tier interpretation because one candidate can contribute many linked rows.
+- [X] Add `scripts/qc_genome_linking_multiplicity.py`.
+- [X] Run genome-linking multiplicity QC.
+- [X] Track the multiplicity-QC summary.
+- [X] Produce local one-row-per-candidate primary mapping table.
+- [X] Confirm primary table contains 4,531 dark-candidate rows.
 
-A new QC/collapse script has been added:
+Confirmed multiplicity-QC summary:
 
 ```text
-scripts/qc_genome_linking_multiplicity.py
+Total linked rows read: 574504
+Unique candidate IDs: 4531
+Primary rows written: 4531
+matched_primary_from_multiple_strict: 4531
+rank_1: 4531
 ```
-
-This script keeps the full multi-match genome-linked table local but writes a deterministic one-row-per-candidate primary mapping table plus multiplicity diagnostics.
 
 Expected local outputs:
 
@@ -121,40 +128,46 @@ Expected local outputs:
 
 Only the summary should normally be committed; the full primary and multiplicity TSVs should remain ignored/local unless deliberately force-added.
 
+## Active issue: regenerate downstream figures and prioritisation
+
+The committed compact figure tables still reflect the first-pass many-to-many mapping. In particular:
+
+```text
+Figure 05: matched_multiple = 574504
+Figure 14: high_priority + medium_priority + low_priority_or_manual_review = 574504
+```
+
+These should be treated as first-pass diagnostic outputs, not final candidate-level biological summaries.
+
 ## Immediate next action
 
-Run genome-linking multiplicity QC on Maxwell if not already done:
+Regenerate duplication/prioritisation and Figures 05–15 using the primary genome-linking table:
 
-```bash
-cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
-
-git pull
-
-python3 scripts/qc_genome_linking_multiplicity.py \
-  --linked /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.tsv \
-  --outdir /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup \
-  --candidate-id-column protein_id \
-  --prefix equina_dark_candidates
+```text
+/uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
 ```
 
-Then inspect:
+The regenerated candidate-level counts should sum to:
 
-```bash
-cat /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linking_multiplicity.summary.txt
-wc -l /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
+```text
+4531
 ```
 
-The primary mapping table should contain 4,532 lines: one header plus 4,531 dark candidates.
+not:
 
-## Next project step after multiplicity QC
+```text
+574504
+```
 
-If the primary mapping table is clean:
+Practical run plan:
 
-1. Update figure-generation scripts to use `equina_dark_candidates.genome_linked.primary.tsv` for candidate-level summaries.
-2. Regenerate Figures 05–15.
-3. Re-check that candidate-level priority-tier counts sum to 4,531 candidates, not hundreds of thousands of linked rows.
-4. Commit scripts, notes, summaries, figures, and compact figure tables.
-5. Keep large full TSVs ignored/local.
+1. Retarget any duplication/prioritisation command that currently uses `equina_dark_candidates.genome_linked.tsv` so that it uses `equina_dark_candidates.genome_linked.primary.tsv` instead.
+2. Rebuild prioritisation outputs locally.
+3. Rerun figure generation with `GENOME_LINKED_TSV` pointing to the primary table.
+4. Confirm `08_figures/figure_tables/figure_05_genome_linking_status_counts.tsv` sums to 4,531.
+5. Confirm `08_figures/figure_tables/figure_14_priority_tier_counts.tsv` sums to 4,531.
+6. Commit only scripts, notes, summaries, figures, and compact figure tables.
+7. Keep large full TSVs ignored/local.
 
 ## Remaining biological validation steps
 
