@@ -10,15 +10,10 @@ Outputs:
   <prefix>.final_shortlist.tsv
   <prefix>.final_summary.txt
 
-The shortlist score is deliberately transparent and conservative. It rewards:
-  - BUSCO-backed high priority tier
-  - non-assembly-redundant duplication interpretation
-  - DE significance in focal stress contrasts
-  - diesel-added significance specifically
-  - strong absolute logFC / adjusted p-value evidence
-  - no repeat/TE overlap as a modest confidence bonus
-
-Repeat/TE overlap is retained as biological context, not used as an automatic exclusion.
+By default, all contrasts present in the significant-long DE table are treated as
+stress-response evidence. This matches the multi-stressor design better than a
+narrow diesel-only interpretation. A custom comma-separated set can still be
+provided with --focal-contrasts.
 """
 
 import argparse
@@ -50,8 +45,11 @@ def parse_args():
     p.add_argument("--candidate-id-column", default="protein_id")
     p.add_argument(
         "--focal-contrasts",
-        default="diesel_added_wald,combined_wald,full_model_LRT,interactive_only_wald,interactive_only_LRT",
-        help="Comma-separated contrasts considered focal stress-response evidence.",
+        default="all",
+        help=(
+            "Comma-separated contrasts treated as stress-response evidence. "
+            "Use 'all' to use every contrast present in --sig-long. Default: all."
+        ),
     )
     p.add_argument("--top-n", type=int, default=250, help="Number of rows to write to the shortlist table.")
     return p.parse_args()
@@ -106,12 +104,23 @@ def candidate_id(row, preferred):
     return ""
 
 
-def bool_is_yes(value):
-    return clean(value).lower() in {"yes", "true", "1", "de_significant"}
+def all_contrasts_from_sig_long(path):
+    _headers, rows = read_tsv(path)
+    return sorted({clean(row.get("contrast")) for row in rows if clean(row.get("contrast"))})
+
+
+def resolve_focal_contrasts(value, sig_long_path):
+    value = clean(value)
+    if not value or value.lower() == "all":
+        return all_contrasts_from_sig_long(sig_long_path), "all"
+    contrasts = [x.strip() for x in value.split(",") if x.strip()]
+    return contrasts, "custom"
 
 
 def load_sig_records(path, focal_contrasts):
     headers, rows = read_tsv(path)
+    if "candidate_id" not in headers or "contrast" not in headers:
+        raise SystemExit("ERROR: --sig-long must contain candidate_id and contrast columns")
     by_candidate = defaultdict(list)
     for row in rows:
         cid = clean(row.get("candidate_id"))
@@ -120,20 +129,21 @@ def load_sig_records(path, focal_contrasts):
         contrast = clean(row.get("contrast"))
         logfc = as_float(row.get("logfc"))
         padj = as_float(row.get("padj"))
-        direction = clean(row.get("direction")) or ("up" if logfc and logfc > 0 else "down" if logfc and logfc < 0 else "NA")
-        rec = {
+        direction = clean(row.get("direction"))
+        if not direction:
+            direction = "up" if logfc and logfc > 0 else "down" if logfc and logfc < 0 else "NA"
+        by_candidate[cid].append({
             "contrast": contrast,
             "direction": direction,
             "logfc": logfc,
             "padj": padj,
             "is_focal": contrast in focal_contrasts,
             "is_diesel_added": contrast == "diesel_added_wald",
-        }
-        by_candidate[cid].append(rec)
+        })
     return by_candidate
 
 
-def score_candidate(row, records, cols, focal_contrasts):
+def score_candidate(row, records, cols):
     score = 0
     reasons = []
 
@@ -170,7 +180,7 @@ def score_candidate(row, records, cols, focal_contrasts):
 
     if focal_records:
         score += 20
-        reasons.append("focal_stress_DE")
+        reasons.append("stress_contrast_DE")
         score += min(10, 2 * len(set(r["contrast"] for r in focal_records)))
 
     if diesel_records:
@@ -199,9 +209,8 @@ def score_candidate(row, records, cols, focal_contrasts):
     elif repeat_status == "repeat_overlap":
         reasons.append("repeat_TE_overlap_context")
 
-    # DMR overlap was negative in both experiments. Capture if columns are present.
-    dmr_status_values = [clean(row.get(col)) for col in cols.get("dmr_cols", []) if clean(row.get(col))]
-    if dmr_status_values and all(v == "no_dmr_overlap" for v in dmr_status_values):
+    dmr_values = [clean(row.get(col)) for col in cols.get("dmr_cols", []) if clean(row.get(col))]
+    if dmr_values and all(v == "no_dmr_overlap" for v in dmr_values):
         score += 3
         reasons.append("no_DMR_overlap")
 
@@ -211,17 +220,17 @@ def score_candidate(row, records, cols, focal_contrasts):
 def summarise_records(records):
     if not records:
         return {
-            "final_focal_stress_responsive": "no",
+            "final_stress_responsive": "no",
             "final_diesel_added_responsive": "no",
             "final_n_significant_contrasts": 0,
-            "final_n_focal_significant_contrasts": 0,
+            "final_n_stress_significant_contrasts": 0,
             "final_best_abs_logfc": "NA",
             "final_best_padj": "NA",
             "final_significant_contrast_summary": "NA",
         }
 
     contrasts = sorted(set(r["contrast"] for r in records))
-    focal_contrasts = sorted(set(r["contrast"] for r in records if r["is_focal"]))
+    stress_contrasts = sorted(set(r["contrast"] for r in records if r["is_focal"]))
     best_abs_lfc = max(abs(r["logfc"] or 0.0) for r in records)
     best_padj = min((r["padj"] for r in records if r["padj"] is not None), default=None)
     sig_summary = ";".join(
@@ -229,10 +238,10 @@ def summarise_records(records):
         for r in sorted(records, key=lambda x: (x["padj"] if x["padj"] is not None else 1.0, -abs(x["logfc"] or 0.0)))
     )
     return {
-        "final_focal_stress_responsive": "yes" if focal_contrasts else "no",
+        "final_stress_responsive": "yes" if stress_contrasts else "no",
         "final_diesel_added_responsive": "yes" if any(r["is_diesel_added"] for r in records) else "no",
         "final_n_significant_contrasts": len(contrasts),
-        "final_n_focal_significant_contrasts": len(focal_contrasts),
+        "final_n_stress_significant_contrasts": len(stress_contrasts),
         "final_best_abs_logfc": f"{best_abs_lfc:.6g}",
         "final_best_padj": f"{best_padj:.6g}" if best_padj is not None else "NA",
         "final_significant_contrast_summary": sig_summary,
@@ -243,9 +252,11 @@ def main():
     args = parse_args()
     os.makedirs(args.outdir, exist_ok=True)
 
-    focal_contrasts = [x.strip() for x in args.focal_contrasts.split(",") if x.strip()]
+    focal_contrasts, focal_mode = resolve_focal_contrasts(args.focal_contrasts, args.sig_long)
+    focal_set = set(focal_contrasts)
+
     headers, rows = read_tsv(args.de_context)
-    sig_records = load_sig_records(args.sig_long, set(focal_contrasts))
+    sig_records = load_sig_records(args.sig_long, focal_set)
 
     cols = {
         "priority": detect_col(headers, ["priority_tier"]),
@@ -256,14 +267,13 @@ def main():
     }
 
     out_rows = []
-    status_counts = Counter()
+    category_counts = Counter()
     priority_counts = Counter()
-    shortlist_reason_counts = Counter()
+    reason_counts = Counter()
 
     for row in rows:
         cid = candidate_id(row, args.candidate_id_column)
         records = sig_records.get(cid, [])
-        # If candidate_id differs from protein_id, try transcript/gene IDs as a fallback.
         if not records:
             for alt_col in ["transcript_id", "gene_id", "source_fasta_id"]:
                 alt = clean(row.get(alt_col))
@@ -271,18 +281,19 @@ def main():
                     records = sig_records[alt]
                     break
 
-        score, reasons = score_candidate(row, records, cols, set(focal_contrasts))
+        score, reasons = score_candidate(row, records, cols)
         rec_summary = summarise_records(records)
 
-        final_category = "retain_context_only"
-        if score >= 75 and rec_summary["final_focal_stress_responsive"] == "yes":
+        if score >= 75 and rec_summary["final_stress_responsive"] == "yes":
             final_category = "top_stress_responsive_dark_candidate"
-        elif score >= 55 and rec_summary["final_focal_stress_responsive"] == "yes":
+        elif score >= 55 and rec_summary["final_stress_responsive"] == "yes":
             final_category = "strong_stress_responsive_dark_candidate"
-        elif rec_summary["final_focal_stress_responsive"] == "yes":
+        elif rec_summary["final_stress_responsive"] == "yes":
             final_category = "stress_responsive_dark_candidate"
         elif records:
-            final_category = "DE_dark_candidate_non_focal_contrast"
+            final_category = "DE_dark_candidate_non_selected_contrast"
+        else:
+            final_category = "retain_context_only"
 
         out = dict(row)
         out.update(rec_summary)
@@ -291,29 +302,36 @@ def main():
             "final_shortlist_score": score,
             "final_shortlist_category": final_category,
             "final_shortlist_reasons": ";".join(reasons) if reasons else "NA",
+            "final_stress_contrast_scope": focal_mode,
         })
         out_rows.append(out)
-        status_counts[final_category] += 1
+        category_counts[final_category] += 1
         priority_counts[clean(row.get(cols.get("priority") or "")) or "NA"] += 1
         for reason in reasons:
-            shortlist_reason_counts[reason] += 1
+            reason_counts[reason] += 1
 
-    out_rows.sort(key=lambda r: (
-        -int(float(r.get("final_shortlist_score", 0))),
-        as_float(r.get("final_best_padj")) if as_float(r.get("final_best_padj")) is not None else 1.0,
-        -as_float(r.get("final_best_abs_logfc")) if as_float(r.get("final_best_abs_logfc")) is not None else 0.0,
-        r.get("final_candidate_id", ""),
-    ))
+    def sort_key(row):
+        padj = as_float(row.get("final_best_padj"))
+        lfc = as_float(row.get("final_best_abs_logfc"))
+        return (
+            -int(float(row.get("final_shortlist_score", 0))),
+            padj if padj is not None else 1.0,
+            -(lfc if lfc is not None else 0.0),
+            row.get("final_candidate_id", ""),
+        )
+
+    out_rows.sort(key=sort_key)
 
     extra_headers = [
         "final_candidate_id",
         "final_shortlist_score",
         "final_shortlist_category",
         "final_shortlist_reasons",
-        "final_focal_stress_responsive",
+        "final_stress_contrast_scope",
+        "final_stress_responsive",
         "final_diesel_added_responsive",
         "final_n_significant_contrasts",
-        "final_n_focal_significant_contrasts",
+        "final_n_stress_significant_contrasts",
         "final_best_abs_logfc",
         "final_best_padj",
         "final_significant_contrast_summary",
@@ -336,15 +354,16 @@ def main():
         summary.write(f"Candidate rows read: {len(rows)}\n")
         summary.write(f"Significant-DE candidate IDs indexed: {len(sig_records)}\n")
         summary.write(f"Shortlist rows written: {min(args.top_n, len(out_rows))}\n")
-        summary.write(f"Focal contrasts: {','.join(focal_contrasts)}\n")
+        summary.write(f"Stress contrast scope: {focal_mode}\n")
+        summary.write(f"Stress contrasts used: {','.join(focal_contrasts)}\n")
         summary.write("\nFinal shortlist category counts:\n")
-        for key, value in status_counts.most_common():
+        for key, value in category_counts.most_common():
             summary.write(f"- {key}: {value}\n")
         summary.write("\nPriority tier counts in input:\n")
         for key, value in priority_counts.most_common():
             summary.write(f"- {key}: {value}\n")
         summary.write("\nMost common shortlist evidence reasons:\n")
-        for key, value in shortlist_reason_counts.most_common(30):
+        for key, value in reason_counts.most_common(30):
             summary.write(f"- {key}: {value}\n")
         summary.write("\nOutputs:\n")
         summary.write(f"- Final integrated table: {integrated_path}\n")
