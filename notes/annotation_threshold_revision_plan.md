@@ -2,21 +2,22 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, first-pass genome linking, first-pass figure generation, and genome-linking multiplicity QC are now complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, duplication/prioritisation rerun, and candidate-level figure regeneration are now complete.
 
-The active issue is now figure/prioritisation regeneration: the multiplicity QC produced a clean one-row-per-candidate primary genome-linking table, but the committed first-pass figure tables still reflect the pre-collapse many-to-many linked table. Figures 05–15 and priority summaries should therefore be regenerated from the primary mapping table before biological interpretation.
+The active phase is now repeat/TE-overlap integration for the 4,531 dark candidates.
 
 ## Repository status
 
-Checked after the successful push and multiplicity-QC update:
+Checked after the corrected candidate-level prioritisation and figure push:
 
 - Branch: `revise-homology-filtering`
 - Remote branch visible on GitHub: yes
-- Large rejected full genome-linked table removed from pushed diff: yes
-- Full generated table remains local/generated and ignored: `03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv`
+- Large generated full TSVs excluded from pushed diff: yes
+- Full generated genome-linked table remains local/generated and ignored: `03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv`
 - First-pass genome-linking summary is tracked.
 - Multiplicity-QC summary is tracked.
-- Figure outputs, figure manifest, compact figure tables, scripts, and notes are tracked.
+- Duplication/prioritisation summary is tracked.
+- Corrected figures, figure manifest, compact figure tables, scripts, and notes are tracked.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -80,14 +81,16 @@ FASTA records written: 4531
 Candidates missing sequences: 0
 ```
 
-### First-pass genome linking and figures
+### Genome linking and multiplicity QC
 
 - [X] Run first-pass GFF3/genome lookup.
 - [X] Generate first-pass genome-linked output locally.
 - [X] Track first-pass genome-linking summary.
-- [X] Generate first-pass figure set, Figures 02–15.
-- [X] Generate figure manifest and compact figure tables.
-- [X] Push cleaned branch with large generated TSVs excluded.
+- [X] Add `scripts/qc_genome_linking_multiplicity.py`.
+- [X] Run genome-linking multiplicity QC.
+- [X] Track the multiplicity-QC summary.
+- [X] Produce local one-row-per-candidate primary mapping table.
+- [X] Confirm primary table contains 4,531 dark-candidate rows.
 
 First-pass genome-linking summary:
 
@@ -97,16 +100,6 @@ Linked output rows: 574504
 Unmatched candidates: 0
 matched_multiple: 4531
 ```
-
-Interpretation: every dark candidate found at least one genome match, but the first-pass table is many-to-many and inflates downstream linked-row counts.
-
-### Genome-linking multiplicity QC
-
-- [X] Add `scripts/qc_genome_linking_multiplicity.py`.
-- [X] Run genome-linking multiplicity QC.
-- [X] Track the multiplicity-QC summary.
-- [X] Produce local one-row-per-candidate primary mapping table.
-- [X] Confirm primary table contains 4,531 dark-candidate rows.
 
 Confirmed multiplicity-QC summary:
 
@@ -118,62 +111,101 @@ matched_primary_from_multiple_strict: 4531
 rank_1: 4531
 ```
 
-Expected local outputs:
+### Corrected duplication/prioritisation and figures
+
+- [X] Rerun duplication/prioritisation using the primary genome-linked table.
+- [X] Regenerate Figures 05–15 using candidate-level inputs.
+- [X] Confirm Figure 05 now sums to 4,531 genome-linked candidates.
+- [X] Confirm Figure 14 priority tiers now sum to 4,531 candidates.
+- [X] Track corrected duplication/prioritisation summary.
+- [X] Track corrected compact figure tables and figures.
+
+Confirmed corrected candidate-level figure counts:
 
 ```text
-06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
-06_genome_lookup/equina_dark_candidates.genome_linking_multiplicity.tsv
-06_genome_lookup/equina_dark_candidates.genome_linking_multiplicity.summary.txt
+Figure 05 genome-linking status:
+matched_multiple: 4531
+
+Figure 14 priority tiers:
+high_priority: 4209
+medium_priority: 322
+low_priority_or_manual_review: 0
 ```
 
-Only the summary should normally be committed; the full primary and multiplicity TSVs should remain ignored/local unless deliberately force-added.
-
-## Active issue: regenerate downstream figures and prioritisation
-
-The committed compact figure tables still reflect the first-pass many-to-many mapping. In particular:
+Confirmed duplication/prioritisation summary:
 
 ```text
-Figure 05: matched_multiple = 574504
-Figure 14: high_priority + medium_priority + low_priority_or_manual_review = 574504
+Genome-linked candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
+BUSCO full table: NA
+Cluster method: exact_python_fallback
+Cluster rows written: 4531
+Unique clusters: 3371
+large_near_identical_clusters_5_plus: 104
+singleton_clusters: 2926
+small_near_identical_clusters_2_to_4: 341
+single_copy_or_no_near_identical_dark_duplicate: 2926
+possible_biological_gene_family_expansion: 1605
+high_priority: 4209
+medium_priority: 322
 ```
 
-These should be treated as first-pass diagnostic outputs, not final candidate-level biological summaries.
+Important caveat: BUSCO context is currently unavailable in this run because `BUSCO_FULL_TABLE` was `NA`. Duplication/prioritisation currently reflects exact-sequence clustering and genome context, not BUSCO-validated scaffold duplication.
+
+## Active issue: repeat/TE-overlap integration
+
+A new script has been added:
+
+```text
+scripts/add_repeat_overlap_context.py
+```
+
+This script adds repeat/TE-overlap context to candidate or prioritised TSVs using a GFF3 or BED repeat annotation. It expects candidate contig/start/end columns and writes:
+
+```text
+<outdir>/equina_dark_candidates.repeat_overlap.tsv
+<outdir>/equina_dark_candidates.repeat_overlap.summary.txt
+```
+
+The full repeat-overlap TSV should remain local/generated unless it is deliberately small enough to track. The summary should be committed.
 
 ## Immediate next action
 
-Regenerate duplication/prioritisation and Figures 05–15 using the primary genome-linking table:
+Run repeat-overlap context using the corrected prioritised candidate table and the main structural/repeat GFF3 or repeat annotation BED.
 
-```text
-/uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
+Suggested command pattern:
+
+```bash
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
+
+python3 scripts/add_repeat_overlap_context.py \
+  --candidates "${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
+  --repeats "${PROJECT_DIR}/00_raw/combined_annotations.gff3" \
+  --outdir "${PROJECT_DIR}/09_repeat_overlap" \
+  --prefix equina_dark_candidates \
+  --candidate-id-column protein_id \
+  --contig-column contig \
+  --start-column transcript_start \
+  --end-column transcript_end
 ```
 
-The regenerated candidate-level counts should sum to:
+If using a dedicated RepeatMasker/TE BED instead of the combined GFF3, replace the `--repeats` path with that file.
 
-```text
-4531
+After running, inspect:
+
+```bash
+cat "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.summary.txt"
+awk -F '\t' 'NR>1 {sum++} END {print sum}' "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv"
 ```
 
-not:
-
-```text
-574504
-```
-
-Practical run plan:
-
-1. Retarget any duplication/prioritisation command that currently uses `equina_dark_candidates.genome_linked.tsv` so that it uses `equina_dark_candidates.genome_linked.primary.tsv` instead.
-2. Rebuild prioritisation outputs locally.
-3. Rerun figure generation with `GENOME_LINKED_TSV` pointing to the primary table.
-4. Confirm `08_figures/figure_tables/figure_05_genome_linking_status_counts.tsv` sums to 4,531.
-5. Confirm `08_figures/figure_tables/figure_14_priority_tier_counts.tsv` sums to 4,531.
-6. Commit only scripts, notes, summaries, figures, and compact figure tables.
-7. Keep large full TSVs ignored/local.
+The repeat-overlap table should contain 4,531 candidate rows.
 
 ## Remaining biological validation steps
 
-- [ ] Add TE-overlap context for dark candidates.
+- [ ] Run repeat/TE-overlap context.
 - [ ] Add methylation/DMR overlap context.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
 - [ ] Prioritise stress-responsive dark candidates.
-- [ ] Produce final candidate shortlist with genome, duplication, expression, methylation, and annotation-evidence fields.
+- [ ] Produce final candidate shortlist with genome, duplication, repeat/TE, expression, methylation, and annotation-evidence fields.
