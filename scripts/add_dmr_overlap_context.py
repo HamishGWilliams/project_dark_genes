@@ -68,7 +68,7 @@ def to_int(x):
         return None
 
 
-def detect_col(headers, explicit, candidates, label):
+def detect_col(headers, explicit, candidates, label, required=True):
     if explicit:
         if explicit not in headers:
             raise SystemExit(f"ERROR: requested {label} column {explicit!r} not found")
@@ -77,7 +77,9 @@ def detect_col(headers, explicit, candidates, label):
     for cand in candidates:
         if cand.lower() in lower:
             return lower[cand.lower()]
-    raise SystemExit(f"ERROR: could not detect {label}. Available columns: {', '.join(headers)}")
+    if required:
+        raise SystemExit(f"ERROR: could not detect {label}. Available columns: {', '.join(headers)}")
+    return None
 
 
 def looks_like_header(parts):
@@ -86,9 +88,25 @@ def looks_like_header(parts):
     return to_int(parts[1]) is None or to_int(parts[2]) is None
 
 
+def sign_effect(value):
+    value = clean(value)
+    if not value:
+        return "NA"
+    try:
+        numeric = float(value)
+    except Exception:
+        return value
+    if numeric > 0:
+        return f"hyper_or_positive_meth_diff:{value}"
+    if numeric < 0:
+        return f"hypo_or_negative_meth_diff:{value}"
+    return f"zero_meth_diff:{value}"
+
+
 def read_dmrs(path, args):
     by_contig = defaultdict(list)
     parse_counts = Counter()
+    detected = {}
 
     with open(path, "r", encoding="utf-8", errors="replace", newline="") as handle:
         first_data = None
@@ -97,10 +115,11 @@ def read_dmrs(path, args):
                 first_data = raw.rstrip("\n")
                 break
         if first_data is None:
-            return by_contig, {}, parse_counts
+            return by_contig, {}, parse_counts, detected
 
     with open(path, "r", encoding="utf-8", errors="replace", newline="") as handle:
         if args.dmr_format == "bed" or (args.dmr_format == "auto" and not looks_like_header(first_data.split("\t"))):
+            detected.update({"dmr_format_used": "bed"})
             for i, line in enumerate(handle, start=1):
                 if not line.strip() or line.startswith("#"):
                     parse_counts["comment_or_blank"] += 1
@@ -117,7 +136,6 @@ def read_dmrs(path, args):
                     continue
                 dmr_id = parts[3] if len(parts) > 3 and clean(parts[3]) else f"dmr_{i}"
                 effect = parts[4] if len(parts) > 4 and clean(parts[4]) else "NA"
-                # BED: 0-based half-open -> 1-based closed.
                 start = start0 + 1
                 end = end0
                 if end < start:
@@ -126,13 +144,38 @@ def read_dmrs(path, args):
                 by_contig[contig].append({"contig": contig, "start": start, "end": end, "dmr_id": dmr_id, "effect": effect})
                 parse_counts["parsed_bed"] += 1
         else:
+            detected.update({"dmr_format_used": "tsv"})
             reader = csv.DictReader(handle, delimiter="\t")
             headers = reader.fieldnames or []
-            contig_col = detect_col(headers, args.dmr_contig_column, ["contig", "scaffold", "seqid", "chrom", "chromosome"], "DMR contig")
+            contig_col = detect_col(
+                headers,
+                args.dmr_contig_column,
+                ["contig", "scaffold", "seqid", "seqnames", "chrom", "chromosome"],
+                "DMR contig",
+            )
             start_col = detect_col(headers, args.dmr_start_column, ["start", "dmr_start", "begin"], "DMR start")
             end_col = detect_col(headers, args.dmr_end_column, ["end", "dmr_end", "stop"], "DMR end")
-            id_col = args.dmr_id_column if args.dmr_id_column in headers else None
-            effect_col = args.dmr_effect_column if args.dmr_effect_column in headers else None
+            id_col = detect_col(
+                headers,
+                args.dmr_id_column,
+                ["dmr_id", "id", "ID", "Name", "name", "region", "Parent"],
+                "DMR ID",
+                required=False,
+            )
+            effect_col = detect_col(
+                headers,
+                args.dmr_effect_column,
+                ["direction", "effect", "status", "meth.diff", "meth_diff", "methylation_difference", "delta_methylation", "logfc"],
+                "DMR effect",
+                required=False,
+            )
+            detected.update({
+                "dmr_contig_column": contig_col,
+                "dmr_start_column": start_col,
+                "dmr_end_column": end_col,
+                "dmr_id_column": id_col or "NA",
+                "dmr_effect_column": effect_col or "NA",
+            })
             for i, row in enumerate(reader, start=1):
                 contig = clean(row.get(contig_col))
                 start = to_int(row.get(start_col))
@@ -143,14 +186,15 @@ def read_dmrs(path, args):
                 if end < start:
                     start, end = end, start
                 dmr_id = clean(row.get(id_col)) if id_col else f"dmr_{i}"
-                effect = clean(row.get(effect_col)) if effect_col else "NA"
+                raw_effect = clean(row.get(effect_col)) if effect_col else "NA"
+                effect = sign_effect(raw_effect)
                 by_contig[contig].append({"contig": contig, "start": start, "end": end, "dmr_id": dmr_id or f"dmr_{i}", "effect": effect or "NA"})
                 parse_counts["parsed_tsv"] += 1
 
     for contig in by_contig:
         by_contig[contig].sort(key=lambda x: (x["start"], x["end"]))
     starts = {contig: [x["start"] for x in rows] for contig, rows in by_contig.items()}
-    return by_contig, starts, parse_counts
+    return by_contig, starts, parse_counts, detected
 
 
 def merge_intervals(intervals):
@@ -189,7 +233,7 @@ def find_overlaps(contig, start, end, dmrs, starts, min_bp):
 def main():
     args = parse_args()
     os.makedirs(args.outdir, exist_ok=True)
-    dmrs, starts, parse_counts = read_dmrs(args.dmrs, args)
+    dmrs, starts, parse_counts, detected = read_dmrs(args.dmrs, args)
 
     with open(args.candidates, "r", newline="", encoding="utf-8", errors="replace") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
@@ -254,6 +298,9 @@ def main():
         summary.write(f"DMR intervals: {args.dmrs}\n")
         summary.write(f"Output directory: {args.outdir}\n")
         summary.write(f"Candidate rows read: {len(rows)}\n")
+        summary.write("\nDetected DMR columns/settings:\n")
+        for key, value in detected.items():
+            summary.write(f"- {key}: {value}\n")
         summary.write("\nDMR parse counts:\n")
         for key, value in parse_counts.most_common():
             summary.write(f"- {key}: {value}\n")
