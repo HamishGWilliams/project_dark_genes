@@ -1,0 +1,42 @@
+Dark candidate repeat-overlap summary
+=====================================
+Candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/07_duplication_context/equina_dark_candidates.prioritised.tsv
+Repeat annotation: /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/combined_annotations.gff3
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap
+Candidate rows read: 4531
+Repeat records parsed: 2048120
+Repeat records skipped: 1490
+
+Repeat-overlap status counts:
+- repeat_overlap: 4531
+
+Top overlapping repeat labels:
+- downstream_region: 1495
+- rnd-1_family-154 1 53: 93
+- rnd-1_family-206 1 4859: 92
+- rnd-1_family-206 4 4859: 84
+- rnd-6_family-12204 40 92: 61
+- rnd-1_family-913 1 178: 49
+- rnd-1_family-567 1 55: 45
+- rnd-1_family-13 1 775: 41
+- cds.evm.utg2007.18: 40
+- rnd-1_family-206 4 4858: 39
+- cds.evm.utg2007.18.1.5c22ecb4: 36
+- cds.evm.utg2007.18.2.5c22ecb4: 36
+- gmap_gene_find_equina_smart_1447778.path1: 36
+- cds.evm.utg2007.18.4.5c22ecb4: 35
+- cds.evm.utg2007.18.3.5c22ecb4: 35
+- rnd-6_family-5610 1938 1992: 32
+- rnd-1_family-1078 13 131: 31
+- cds.evm.utg107.15: 28
+- gmap_gene_find_equina_smart_1167581.path1: 26
+- cds.evm.utg4796.12: 26
+- rnd-1_family-206 44 4859: 24
+- gmap_gene_find_equina_smart_1447777.path1: 24
+- rnd-6_family-949 6217 6371: 23
+- (CAC)n 1 23: 23
+- rnd-5_family-1370 1 248: 21
+
+Outputs:
+- Candidate repeat-overlap table: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
+- Summary: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap/equina_dark_candidates.repeat_overlap.summary.txt
