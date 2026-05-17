@@ -1,0 +1,41 @@
+Dark candidate differential-expression context summary
+======================================================
+Candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.tsv
+DE table: /uoa/scratch/users/r02hw22/project_dark_genes/05_rnaseq/05_de/Multi_Stressor_all_Differential_Expression_Analysis_results.csv
+Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context
+Candidate rows read: 4531
+DE rows read: 42101
+DE IDs indexed: 42091
+padj threshold: 0.05
+abs(logFC) threshold: 1.0
+
+Detected DE settings:
+- de_id_column: gene
+- de_format_used: wide
+- wide_pairs_detected: 10
+- wide_pairs: diesel_only_wald:LFC_diesel_only_wald:padj_diesel_only_wald;salinity_only_wald:LFC_salinity_only_wald:padj_salinity_only_wald;diesel_added_wald:LFC_diesel_added_wald:padj_diesel_added_wald;salinity_added_wald:LFC_salinity_added_wald:padj_salinity_added_wald;interactive_only_wald:LFC_interactive_only_wald:padj_interactive_only_wald;combined_wald:LFC_combined_wald:padj_combined_wald;diesel_only_LRT:LFC_diesel_only_LRT:padj_diesel_only_LRT;salinity_only_LRT:LFC_salinity_only_LRT:padj_salinity_only_LRT;full_model_LRT:LFC_full_model_LRT:padj.x;interactive_only_LRT:LFC_interactive_only_LRT:padj.y
+- de_delimiter: comma
+
+DE parse counts:
+- parsed_de_record: 394453
+- missing_lfc_or_padj: 26557
+
+Candidate DE status counts:
+- de_record_matched_not_significant: 2263
+- no_de_record_matched: 1542
+- de_significant: 726
+
+Significant dark-candidate counts by contrast:
+- combined_wald: 406
+- salinity_added_wald: 398
+- full_model_LRT: 301
+- salinity_only_wald: 270
+- salinity_only_LRT: 269
+- diesel_added_wald: 69
+- interactive_only_wald: 7
+- interactive_only_LRT: 3
+
+Outputs:
+- Candidate DE-context table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_context.tsv
+- Significant DE long table: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_significant_long.tsv
+- Summary: /uoa/scratch/users/r02hw22/project_dark_genes/11_expression_context/equina_dark_candidates.de_context.summary.txt
