@@ -2,9 +2,9 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, and two-experiment methylation/DMR overlap integration are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, two-experiment methylation/DMR overlap integration, and RNA-seq differential-expression integration are complete.
 
-The active phase is now RNA-seq expression evidence integration for the 4,531 dark candidates.
+The active phase is now final candidate synthesis: combine annotation darkness, genome context, BUSCO/duplication validation, repeat/TE overlap, DMR results, and RNA-seq DE evidence into a final shortlist and interpretation table.
 
 ## Repository status
 
@@ -22,6 +22,7 @@ The active phase is now RNA-seq expression evidence integration for the 4,531 da
 - DMR overlap script is tracked: `scripts/add_dmr_overlap_context.py`.
 - Two-experiment DMR wrapper is tracked: `scripts/run_dmr_overlap_experiments.sh`.
 - Two-experiment DMR overlap summaries, tables, and manifest are tracked.
+- RNA-seq DE integration script and outputs are tracked: `scripts/add_de_expression_context.py` and `11_expression_context/`.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -247,51 +248,76 @@ no_dmr_overlap: 4531
 
 Interpretation: after parser correction, this is a valid negative result. None of the 4,531 dark candidates overlap the acute/naive or primed/acclimated diesel-response DMR intervals.
 
-## Active issue: RNA-seq expression evidence integration
+### RNA-seq differential-expression integration
 
-Next, determine whether the dark candidates are expressed and whether any are differentially expressed under diesel exposure. This is now the key biological validation layer because DMR overlap is negative.
+- [X] Add `scripts/add_de_expression_context.py`.
+- [X] Run DE integration against `05_rnaseq/05_de/Multi_Stressor_all_Differential_Expression_Analysis_results.csv`.
+- [X] Confirm DE table parsing and contrast-pair detection.
+- [X] Confirm DE context outputs are tracked under `11_expression_context/`.
 
-The preferred input for candidate intervals/evidence is currently:
-
-```text
-10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.tsv
-```
-
-or the equivalent exp2 table. Since both DMR overlaps are negative and contain the same candidates, either can be used as the starting candidate table for expression integration.
-
-## Immediate next action
-
-Locate RNA-seq expression or differential-expression tables on Maxwell. Useful file types include:
+Confirmed DE-context summary:
 
 ```text
-TPM/FPKM/count matrices
-salmon quant.sf / tximport outputs
-featureCounts count tables
-DESeq2/edgeR differential-expression results
+Candidate rows read: 4531
+DE rows read: 42101
+DE IDs indexed: 42091
+padj threshold: 0.05
+abs(logFC) threshold: 1.0
+de_id_column: gene
+de_format_used: wide
+wide_pairs_detected: 10
+parsed_de_record: 394453
+missing_lfc_or_padj: 26557
+de_record_matched_not_significant: 2263
+no_de_record_matched: 1542
+de_significant: 726
 ```
 
-Search pattern:
+Significant dark-candidate counts by contrast:
 
-```bash
-cd /uoa/scratch/users/r02hw22/project_dark_genes
-
-find . -type f \( \
-  -iname "*tpm*" -o \
-  -iname "*fpkm*" -o \
-  -iname "*counts*" -o \
-  -iname "*featurecounts*" -o \
-  -iname "*deseq*" -o \
-  -iname "*edger*" -o \
-  -iname "*diff*expr*" -o \
-  -iname "quant.sf" \
-\) | head -n 100
+```text
+combined_wald: 406
+salinity_added_wald: 398
+full_model_LRT: 301
+salinity_only_wald: 270
+salinity_only_LRT: 269
+diesel_added_wald: 69
+interactive_only_wald: 7
+interactive_only_LRT: 3
 ```
 
-Once the expression table paths and column names are known, add an expression-integration step that classifies candidates as expressed/not expressed and diesel-responsive/not diesel-responsive.
+Interpretation: 2,989 of 4,531 dark candidates matched RNA-seq DE records, and 726 were differentially expressed in at least one multi-stressor contrast. The strongest dark-candidate DE signal is not the pure diesel contrast but the combined/salinity-associated contrasts; `diesel_added_wald` identifies 69 significant dark candidates.
+
+## Active issue: final candidate synthesis and shortlist
+
+Next, generate a final candidate synthesis table that combines:
+
+```text
+annotation darkness
+BUSCO-backed duplication interpretation
+priority tier
+repeat/TE overlap
+DMR overlap from exp1 and exp2
+RNA-seq DE status and significant contrasts
+```
+
+Recommended input:
+
+```text
+11_expression_context/equina_dark_candidates.de_context.tsv
+```
+
+Recommended outputs:
+
+```text
+12_final_candidates/equina_dark_candidates.final_integrated.tsv
+12_final_candidates/equina_dark_candidates.final_shortlist.tsv
+12_final_candidates/equina_dark_candidates.final_summary.txt
+```
 
 ## Remaining biological validation steps
 
-- [ ] Add RNA-seq expression evidence.
-- [ ] Flag expressed versus unsupported dark candidates.
-- [ ] Flag diesel-responsive dark candidates if DE results are available.
+- [ ] Generate final integrated candidate table.
+- [ ] Generate final shortlist of strongest dark candidates.
+- [ ] Prioritise candidates with high priority, non-assembly-redundant duplication status, no DMR overlap caveat, and significant diesel/combined stress DE evidence.
 - [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, DMR, expression, diesel-response, methylation, and annotation-evidence fields.
