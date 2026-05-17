@@ -424,7 +424,129 @@ Output files:
 11_expression_context/equina_dark_candidates.de_context.summary.txt
 ```
 
-## 9. Tracker updates
+## 9. Stress-responsive dark-gene plotting
+
+Script added and then adjusted for smaller text, wrapped labels, tighter margins, and wider export canvases:
+
+```text
+scripts/make_stress_responsive_dark_gene_plots.R
+```
+
+Command used:
+
+```bash
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes \
+Rscript scripts/make_stress_responsive_dark_gene_plots.R
+```
+
+The plotting script applied `bbplot::bbc_style()` when available, with a fallback clean minimal theme.
+
+Confirmed plotting summary:
+
+```text
+Candidates read: 4531
+Significant DE rows read: 1723
+Unique significant dark candidates: 726
+Unique focal stress-responsive dark candidates: 554
+Diesel-added significant dark candidates: 69
+```
+
+Generated plot set:
+
+```text
+12_final_candidates/stress_responsive_plots/stress_figure_16_de_candidates_by_contrast.png
+12_final_candidates/stress_responsive_plots/stress_figure_17_de_direction_by_contrast.png
+12_final_candidates/stress_responsive_plots/stress_figure_18_priority_vs_focal_stress.png
+12_final_candidates/stress_responsive_plots/stress_figure_19_repeat_context_vs_focal_stress.png
+12_final_candidates/stress_responsive_plots/stress_figure_20_focal_stress_signature_combinations.png
+12_final_candidates/stress_responsive_plots/stress_figure_21_diesel_added_dark_gene_response.png
+12_final_candidates/stress_responsive_plots/stress_figure_22_dark_gene_evidence_stack.png
+```
+
+Note: these plots used the earlier focal stress set for signature visualisation. The final synthesis below uses all stress contrasts.
+
+## 10. Final all-stress candidate synthesis
+
+Script added:
+
+```text
+scripts/build_final_dark_candidate_shortlist.py
+```
+
+The script was patched so the default is:
+
+```text
+--focal-contrasts all
+```
+
+This means every contrast present in the significant-long DE table is treated as stress-response evidence.
+
+Command used for the final all-stress run:
+
+```bash
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
+
+python3 scripts/build_final_dark_candidate_shortlist.py \
+  --de-context "${PROJECT_DIR}/11_expression_context/equina_dark_candidates.de_context.tsv" \
+  --sig-long "${PROJECT_DIR}/11_expression_context/equina_dark_candidates.de_significant_long.tsv" \
+  --outdir "${PROJECT_DIR}/12_final_candidates" \
+  --prefix equina_dark_candidates \
+  --top-n 250
+```
+
+Confirmed final all-stress synthesis summary:
+
+```text
+Candidate rows read: 4531
+Significant-DE candidate IDs indexed: 726
+Shortlist rows written: 250
+Stress contrast scope: all
+Stress contrasts used: combined_wald,diesel_added_wald,full_model_LRT,interactive_only_LRT,interactive_only_wald,salinity_added_wald,salinity_only_LRT,salinity_only_wald
+```
+
+Final shortlist category counts:
+
+```text
+retain_context_only: 3767
+top_stress_responsive_dark_candidate: 684
+stress_responsive_dark_candidate: 67
+strong_stress_responsive_dark_candidate: 13
+```
+
+Most common shortlist evidence reasons:
+
+```text
+no_DMR_overlap: 4531
+high_priority: 3903
+repeat_TE_overlap_context: 3329
+single_copy_or_no_near_identical_dark_duplicate: 2926
+possible_biological_gene_family_expansion: 1385
+no_repeat_TE_overlap: 1202
+DE_significant_any_contrast: 764
+stress_contrast_DE: 764
+medium_priority: 420
+abs_logFC_ge_2: 283
+padj_le_0.001: 235
+padj_le_0.01: 227
+assembly_redundancy_or_haplotig_caution: 220
+low_priority_or_manual_review: 208
+abs_logFC_ge_1.5: 193
+diesel_added_DE: 69
+```
+
+Final outputs:
+
+```text
+12_final_candidates/equina_dark_candidates.final_integrated.tsv
+12_final_candidates/equina_dark_candidates.final_shortlist.tsv
+12_final_candidates/equina_dark_candidates.final_summary.txt
+```
+
+## 11. Tracker updates
 
 Main tracker updated repeatedly during the session:
 
@@ -442,31 +564,29 @@ BUSCO-backed duplication validation complete.
 Repeat/TE-overlap integration complete.
 DMR integration complete with valid negative overlap result.
 RNA-seq DE integration complete.
-Next step: final candidate synthesis and shortlist.
+Stress-responsive dark-gene plots complete.
+Final all-stress candidate synthesis complete.
+Next step: review and interpretation of the final all-stress-responsive dark-gene shortlist.
 ```
 
-## 10. Next planned step
+## 12. Next planned step
 
-Generate final integrated candidate tables:
+Review the final top 250 shortlist and decide the reporting subset size:
+
+```bash
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
+
+cat "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_summary.txt"
+cut -f1-12 "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_shortlist.tsv" | head -n 30
+```
+
+Possible reporting subsets:
 
 ```text
-12_final_candidates/equina_dark_candidates.final_integrated.tsv
-12_final_candidates/equina_dark_candidates.final_shortlist.tsv
-12_final_candidates/equina_dark_candidates.final_summary.txt
+top 20 all-stress-responsive dark candidates
+top 50 all-stress-responsive dark candidates
+top 100 all-stress-responsive dark candidates
+full top 250 supplement
 ```
 
-Recommended starting input:
-
-```text
-11_expression_context/equina_dark_candidates.de_context.tsv
-```
-
-Recommended prioritisation criteria:
-
-```text
-high_priority candidate
-not flagged as possible_assembly_redundancy_or_haplotig_duplication
-repeat/TE overlap retained as context, not automatic exclusion
-no DMR overlap in exp1 or exp2
-DE significant in diesel_added_wald, combined_wald, or interaction/full-model contrasts
-```
+Optional next analysis: regenerate the stress-responsive plots with all stress contrasts rather than the earlier focal subset.
