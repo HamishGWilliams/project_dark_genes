@@ -2,9 +2,9 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, two-experiment methylation/DMR overlap integration, RNA-seq differential-expression integration, and stress-responsive dark-gene plotting are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, two-experiment methylation/DMR overlap integration, RNA-seq differential-expression integration, stress-responsive dark-gene plotting, and final all-stress candidate synthesis are complete.
 
-The active phase is final candidate synthesis using **all stress contrasts** from the RNA-seq significant-long DE table, not a diesel-only or narrow focal subset.
+The active phase is now review and interpretation of the final all-stress-responsive dark-gene shortlist.
 
 ## Repository status
 
@@ -13,7 +13,8 @@ The active phase is final candidate synthesis using **all stress contrasts** fro
 - Large generated full TSVs excluded from pushed diff: yes
 - Stress-responsive plot set is tracked under `12_final_candidates/stress_responsive_plots/`.
 - Final synthesis script is tracked: `scripts/build_final_dark_candidate_shortlist.py`.
-- Final synthesis script now defaults to `--focal-contrasts all`, meaning every contrast present in `11_expression_context/equina_dark_candidates.de_significant_long.tsv` is treated as stress-response evidence.
+- Final synthesis script defaults to `--focal-contrasts all`, meaning every contrast present in `11_expression_context/equina_dark_candidates.de_significant_long.tsv` is treated as stress-response evidence.
+- Final all-stress synthesis outputs are tracked under `12_final_candidates/`.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -132,50 +133,69 @@ stress_figure_21_diesel_added_dark_gene_response
 stress_figure_22_dark_gene_evidence_stack
 ```
 
-## Active issue: rerun final synthesis with all stress contrasts
+Note: the plotting summary still labels 554 as `focal stress-responsive` because the plotting workflow used the earlier focal subset for signature visualisation. The final synthesis below is broader and uses all stress contrasts.
 
-A previous final synthesis output exists, but it used the narrower contrast set:
+### Final all-stress candidate synthesis
 
 ```text
-diesel_added_wald,combined_wald,full_model_LRT,interactive_only_wald,interactive_only_LRT
+Candidate rows read: 4531
+Significant-DE candidate IDs indexed: 726
+Shortlist rows written: 250
+Stress contrast scope: all
+Stress contrasts used: combined_wald,diesel_added_wald,full_model_LRT,interactive_only_LRT,interactive_only_wald,salinity_added_wald,salinity_only_LRT,salinity_only_wald
 ```
 
-That output should be treated as superseded once the all-stress-contrast version is regenerated.
+Final shortlist category counts:
 
-## Immediate next action
+```text
+retain_context_only: 3767
+top_stress_responsive_dark_candidate: 684
+stress_responsive_dark_candidate: 67
+strong_stress_responsive_dark_candidate: 13
+```
 
-Run the final shortlist synthesis again. No explicit `--focal-contrasts` argument is needed because the script now defaults to all contrasts in the significant-long DE table:
+Important interpretation: under the all-stress-contrast scope, 764 dark candidates are stress-responsive by the final synthesis scoring categories, including 684 top stress-responsive dark candidates. The top 250 are written to the final shortlist table.
+
+Final outputs:
+
+```text
+12_final_candidates/equina_dark_candidates.final_integrated.tsv
+12_final_candidates/equina_dark_candidates.final_shortlist.tsv
+12_final_candidates/equina_dark_candidates.final_summary.txt
+```
+
+## Active issue: review and interpretation
+
+The computational integration is now complete. The next work is interpretive and reporting-focused:
+
+1. Review the top 250 final shortlist.
+2. Decide whether to present a smaller top 20, top 50, or top 100 subset in the written results.
+3. Produce a final written interpretation of the all-stress-responsive dark-gene set.
+4. Optionally regenerate stress-responsive plots so the plotting workflow also uses all stress contrasts rather than the earlier focal subset.
+
+## Suggested next commands
+
+Inspect the final all-stress summary and shortlist:
 
 ```bash
-cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
-
-git pull
-
 PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
 
-python3 scripts/build_final_dark_candidate_shortlist.py \
-  --de-context "${PROJECT_DIR}/11_expression_context/equina_dark_candidates.de_context.tsv" \
-  --sig-long "${PROJECT_DIR}/11_expression_context/equina_dark_candidates.de_significant_long.tsv" \
-  --outdir "${PROJECT_DIR}/12_final_candidates" \
-  --prefix equina_dark_candidates \
-  --top-n 250
+cat "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_summary.txt"
+
+cut -f1-12 "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_shortlist.tsv" | head -n 30
 ```
 
-Then inspect:
+If desired, regenerate plots with all stress contrasts by setting:
 
 ```bash
-cat "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_summary.txt"
-head -n 20 "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_shortlist.tsv"
-```
-
-The summary should report:
-
-```text
-Stress contrast scope: all
+FOCAL_CONTRASTS="combined_wald,diesel_added_wald,full_model_LRT,interactive_only_LRT,interactive_only_wald,salinity_added_wald,salinity_only_LRT,salinity_only_wald" \
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes \
+Rscript scripts/make_stress_responsive_dark_gene_plots.R
 ```
 
 ## Remaining steps
 
-- [ ] Rerun final integrated candidate synthesis with all stress contrasts.
 - [ ] Review top 250 shortlist.
+- [ ] Decide the final reporting subset size.
+- [ ] Optionally regenerate stress-responsive plots using all stress contrasts.
 - [ ] Produce a final written interpretation of the all-stress-responsive dark-gene set.
