@@ -2,13 +2,11 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, duplication/prioritisation rerun, and candidate-level figure regeneration are now complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, duplication/prioritisation rerun, and candidate-level figure regeneration are complete.
 
-The active phase is now repeat/TE-overlap integration for the 4,531 dark candidates.
+Before moving to repeat/TE-overlap integration, the active phase is now BUSCO-backed duplication validation. This is needed because the current duplication/prioritisation run used `BUSCO_FULL_TABLE=NA`, so priority tiers currently reflect genome linking and exact-sequence clustering, but not BUSCO-validated scaffold duplication.
 
 ## Repository status
-
-Checked after the corrected candidate-level prioritisation and figure push:
 
 - Branch: `revise-homology-filtering`
 - Remote branch visible on GitHub: yes
@@ -18,6 +16,7 @@ Checked after the corrected candidate-level prioritisation and figure push:
 - Multiplicity-QC summary is tracked.
 - Duplication/prioritisation summary is tracked.
 - Corrected figures, figure manifest, compact figure tables, scripts, and notes are tracked.
+- BUSCO-backed validation wrapper has been added: `scripts/run_busco_duplication_validation.sh`.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -151,61 +150,82 @@ medium_priority: 322
 
 Important caveat: BUSCO context is currently unavailable in this run because `BUSCO_FULL_TABLE` was `NA`. Duplication/prioritisation currently reflects exact-sequence clustering and genome context, not BUSCO-validated scaffold duplication.
 
-## Active issue: repeat/TE-overlap integration
+## Active issue: BUSCO-backed duplication validation
 
-A new script has been added:
+A new wrapper has been added:
+
+```text
+scripts/run_busco_duplication_validation.sh
+```
+
+This script will:
+
+1. Locate an existing BUSCO `full_table.tsv`, if present.
+2. Otherwise run BUSCO in protein mode on the representative no-stop proteome.
+3. Copy the BUSCO `full_table.tsv` and short summary into a stable `05_busco/` location.
+4. Rerun `scripts/add_busco_duplication_context.py` using the primary genome-linked dark-candidate table and the BUSCO full table.
+5. Rerun Figures 05–15 with BUSCO-backed prioritisation.
+
+Previous BUSCO interpretation note:
+
+```text
+BUSCO v5.3.2
+mode: proteins
+lineage: metazoa_odb10
+C:95.6% [S:52.9%, D:42.7%], F:2.6%, M:1.8%, n:954
+```
+
+The high duplicated BUSCO fraction is biologically/technically important and should be used as a conservative validation layer for dark-candidate prioritisation.
+
+## Immediate next action
+
+Run BUSCO-backed validation on Maxwell:
+
+```bash
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+git pull
+
+sbatch scripts/run_busco_duplication_validation.sh
+```
+
+If BUSCO is not available as `busco`, load the relevant module or activate the correct conda environment, then rerun. If an existing BUSCO full table already exists, the script should reuse it. To force a known BUSCO full table, run:
+
+```bash
+BUSCO_FULL_TABLE=/path/to/full_table.tsv \
+sbatch scripts/run_busco_duplication_validation.sh
+```
+
+After completion, inspect:
+
+```bash
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
+
+cat "${PROJECT_DIR}/05_busco/equina_representative_longest_per_gene_metazoa_odb10/short_summary.txt"
+cat "${PROJECT_DIR}/07_duplication_context/equina_duplication_context.summary.txt"
+cat "${PROJECT_DIR}/08_figures/figure_tables/figure_14_priority_tier_counts.tsv"
+```
+
+The updated duplication summary should no longer say:
+
+```text
+BUSCO full table: NA
+```
+
+## Next phase after BUSCO-backed validation
+
+After BUSCO-backed prioritisation has been rerun and committed, return to repeat/TE-overlap integration using:
 
 ```text
 scripts/add_repeat_overlap_context.py
 ```
 
-This script adds repeat/TE-overlap context to candidate or prioritised TSVs using a GFF3 or BED repeat annotation. It expects candidate contig/start/end columns and writes:
-
-```text
-<outdir>/equina_dark_candidates.repeat_overlap.tsv
-<outdir>/equina_dark_candidates.repeat_overlap.summary.txt
-```
-
-The full repeat-overlap TSV should remain local/generated unless it is deliberately small enough to track. The summary should be committed.
-
-## Immediate next action
-
-Run repeat-overlap context using the corrected prioritised candidate table and the main structural/repeat GFF3 or repeat annotation BED.
-
-Suggested command pattern:
-
-```bash
-cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
-
-PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
-
-python3 scripts/add_repeat_overlap_context.py \
-  --candidates "${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
-  --repeats "${PROJECT_DIR}/00_raw/combined_annotations.gff3" \
-  --outdir "${PROJECT_DIR}/09_repeat_overlap" \
-  --prefix equina_dark_candidates \
-  --candidate-id-column protein_id \
-  --contig-column contig \
-  --start-column transcript_start \
-  --end-column transcript_end
-```
-
-If using a dedicated RepeatMasker/TE BED instead of the combined GFF3, replace the `--repeats` path with that file.
-
-After running, inspect:
-
-```bash
-cat "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.summary.txt"
-awk -F '\t' 'NR>1 {sum++} END {print sum}' "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv"
-```
-
-The repeat-overlap table should contain 4,531 candidate rows.
-
 ## Remaining biological validation steps
 
+- [ ] Run BUSCO-backed duplication validation.
 - [ ] Run repeat/TE-overlap context.
 - [ ] Add methylation/DMR overlap context.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
 - [ ] Prioritise stress-responsive dark candidates.
-- [ ] Produce final candidate shortlist with genome, duplication, repeat/TE, expression, methylation, and annotation-evidence fields.
+- [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, expression, methylation, and annotation-evidence fields.
