@@ -2,11 +2,9 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, and BUSCO-backed prioritisation summary are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, and BUSCO-backed figure refresh are complete.
 
-One synchronisation item remains before moving on: the tracked duplication summary now reflects BUSCO-backed validation, but the tracked compact figure tables for duplication interpretation and priority tiers still appear to reflect the previous no-BUSCO candidate-level figure run. Figures 13–15 should be regenerated and pushed from the BUSCO-backed prioritised table before treating the figure set as final.
-
-After that, the active phase moves to repeat/TE-overlap integration for the 4,531 dark candidates.
+The active phase is now repeat/TE-overlap integration for the 4,531 dark candidates.
 
 ## Repository status
 
@@ -18,7 +16,8 @@ After that, the active phase moves to repeat/TE-overlap integration for the 4,53
 - Multiplicity-QC summary is tracked.
 - BUSCO-backed duplication/prioritisation summary is tracked.
 - BUSCO-backed validation wrapper is tracked: `scripts/run_busco_duplication_validation.sh`.
-- Corrected figures, figure manifest, compact figure tables, scripts, and notes are tracked, but Figures 13–15 need one more refresh from the BUSCO-backed prioritised table.
+- BUSCO-backed compact figure tables and figures are tracked.
+- Repeat-overlap workflow script is tracked: `scripts/add_repeat_overlap_context.py`.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -133,13 +132,13 @@ medium_priority: 322
 low_priority_or_manual_review: 0
 ```
 
-### BUSCO-backed duplication validation
+### BUSCO-backed duplication validation and figure refresh
 
 - [X] Add `scripts/run_busco_duplication_validation.sh`.
 - [X] Run BUSCO-backed duplication validation.
 - [X] Confirm duplication/prioritisation summary now uses a real BUSCO full table.
 - [X] Confirm BUSCO duplicated loci and duplication-rich scaffolds are incorporated in the duplication summary.
-- [ ] Regenerate and push compact Figures 13–15 from the BUSCO-backed prioritised table.
+- [X] Regenerate and push compact Figures 13–15 from the BUSCO-backed prioritised table.
 
 Confirmed BUSCO-backed duplication/prioritisation summary:
 
@@ -162,13 +161,7 @@ medium_priority: 420
 low_priority_or_manual_review: 208
 ```
 
-Interpretation: BUSCO validation moved 220 candidates into an assembly-redundancy/haplotig-duplication interpretation and reduced the high-priority candidate set from 4,209 to 3,903.
-
-## Active issue: refresh figures from BUSCO-backed prioritisation
-
-The tracked duplication summary is BUSCO-backed, but the tracked compact figure tables still show the previous no-BUSCO counts for Figure 13 and Figure 14. Refresh these before proceeding.
-
-Expected BUSCO-backed figure table targets:
+Confirmed BUSCO-backed figure tables:
 
 ```text
 Figure 13 duplication interpretation:
@@ -182,41 +175,60 @@ medium_priority: 420
 low_priority_or_manual_review: 208
 ```
 
+Interpretation: BUSCO validation moved 220 candidates into an assembly-redundancy/haplotig-duplication interpretation and reduced the high-priority candidate set from 4,209 to 3,903.
+
+## Active issue: repeat/TE-overlap integration
+
+A repeat-overlap workflow script has been added:
+
+```text
+scripts/add_repeat_overlap_context.py
+```
+
+This script adds repeat/TE-overlap context to candidate or prioritised TSVs using a GFF3 or BED repeat annotation. It expects candidate contig/start/end columns and writes:
+
+```text
+<outdir>/equina_dark_candidates.repeat_overlap.tsv
+<outdir>/equina_dark_candidates.repeat_overlap.summary.txt
+```
+
+The full repeat-overlap TSV should remain local/generated unless it is deliberately small enough to track. The summary should be committed.
+
 ## Immediate next action
 
-Rerun figures using the BUSCO-backed prioritised table and push only the updated compact tables/figures:
+Run repeat-overlap context using the BUSCO-backed prioritised candidate table and the main structural/repeat GFF3 or repeat annotation BED.
+
+Suggested command pattern:
 
 ```bash
 cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
 
 PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
 
-GENOME_LINKED_TSV="${PROJECT_DIR}/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv" \
-PRIORITISED_TSV="${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
-BUSCO_FULL_TABLE="${PROJECT_DIR}/05_busco/equina_representative_longest_per_gene_metazoa_odb10/full_table.tsv" \
-bash scripts/make_figures.sh
+python3 scripts/add_repeat_overlap_context.py \
+  --candidates "${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
+  --repeats "${PROJECT_DIR}/00_raw/combined_annotations.gff3" \
+  --outdir "${PROJECT_DIR}/09_repeat_overlap" \
+  --prefix equina_dark_candidates \
+  --candidate-id-column protein_id \
+  --contig-column contig \
+  --start-column transcript_start \
+  --end-column transcript_end
 ```
 
-Then confirm:
+If using a dedicated RepeatMasker/TE BED instead of the combined GFF3, replace the `--repeats` path with that file.
+
+After running, inspect:
 
 ```bash
-cat "${PROJECT_DIR}/08_figures/figure_tables/figure_13_duplication_interpretation_counts.tsv"
-cat "${PROJECT_DIR}/08_figures/figure_tables/figure_14_priority_tier_counts.tsv"
+cat "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.summary.txt"
+awk -F '\t' 'NR>1 {sum++} END {print sum}' "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv"
 ```
 
-After confirmation, commit/push the updated figures, compact figure tables, duplication summary, and tracker. Keep full generated TSVs local/ignored.
-
-## Next phase after figure refresh
-
-Return to repeat/TE-overlap integration using:
-
-```text
-scripts/add_repeat_overlap_context.py
-```
+The repeat-overlap table should contain 4,531 candidate rows.
 
 ## Remaining biological validation steps
 
-- [ ] Refresh Figures 13–15 from BUSCO-backed prioritisation.
 - [ ] Run repeat/TE-overlap context.
 - [ ] Add methylation/DMR overlap context.
 - [ ] Add RNA-seq expression evidence.
