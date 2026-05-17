@@ -4,27 +4,16 @@
 
 The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, two-experiment methylation/DMR overlap integration, RNA-seq differential-expression integration, and stress-responsive dark-gene plotting are complete.
 
-The active phase is now final candidate synthesis: combine annotation darkness, genome context, BUSCO/duplication validation, repeat/TE overlap, DMR results, RNA-seq DE evidence, and stress-responsive plotting outputs into a final shortlist and interpretation table.
+The active phase is final candidate synthesis using **all stress contrasts** from the RNA-seq significant-long DE table, not a diesel-only or narrow focal subset.
 
 ## Repository status
 
 - Branch: `revise-homology-filtering`
 - Remote branch visible on GitHub: yes
 - Large generated full TSVs excluded from pushed diff: yes
-- Full generated genome-linked table remains local/generated and ignored: `03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv`
-- First-pass genome-linking summary is tracked.
-- Multiplicity-QC summary is tracked.
-- BUSCO-backed duplication/prioritisation summary is tracked.
-- BUSCO-backed validation wrapper is tracked: `scripts/run_busco_duplication_validation.sh`.
-- BUSCO-backed compact figure tables and figures are tracked.
-- Repeat-overlap workflow script is tracked: `scripts/add_repeat_overlap_context.py`.
-- Filtered repeat/TE-overlap table and summary are tracked.
-- DMR overlap script is tracked: `scripts/add_dmr_overlap_context.py`.
-- Two-experiment DMR wrapper is tracked: `scripts/run_dmr_overlap_experiments.sh`.
-- Two-experiment DMR overlap summaries, tables, and manifest are tracked.
-- RNA-seq DE integration script and outputs are tracked: `scripts/add_de_expression_context.py` and `11_expression_context/`.
-- Stress-responsive dark-gene plots, plot tables, manifest, and plotting script are tracked under `12_final_candidates/stress_responsive_plots/` and `scripts/make_stress_responsive_dark_gene_plots.R`.
-- Final shortlist synthesis script is tracked: `scripts/build_final_dark_candidate_shortlist.py`.
+- Stress-responsive plot set is tracked under `12_final_candidates/stress_responsive_plots/`.
+- Final synthesis script is tracked: `scripts/build_final_dark_candidate_shortlist.py`.
+- Final synthesis script now defaults to `--focal-contrasts all`, meaning every contrast present in `11_expression_context/equina_dark_candidates.de_significant_long.tsv` is treated as stress-response evidence.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -57,7 +46,6 @@ rank_1: 4531
 ### BUSCO-backed duplication validation
 
 ```text
-BUSCO full table: /uoa/scratch/users/r02hw22/project_dark_genes/05_busco/equina_representative_longest_per_gene_metazoa_odb10/full_table.tsv
 Total BUSCO rows parsed: 1497
 Duplicated BUSCO loci parsed: 950
 BUSCO-duplication-rich scaffolds: 74
@@ -103,13 +91,7 @@ Interpretation: after parser correction, this is a valid negative result. None o
 Candidate rows read: 4531
 DE rows read: 42101
 DE IDs indexed: 42091
-padj threshold: 0.05
-abs(logFC) threshold: 1.0
-de_id_column: gene
-de_format_used: wide
 wide_pairs_detected: 10
-parsed_de_record: 394453
-missing_lfc_or_padj: 26557
 de_record_matched_not_significant: 2263
 no_de_record_matched: 1542
 de_significant: 726
@@ -129,14 +111,6 @@ interactive_only_LRT: 3
 ```
 
 ### Stress-responsive dark-gene plotting
-
-Plots are tracked under:
-
-```text
-12_final_candidates/stress_responsive_plots/
-```
-
-Confirmed plot summary:
 
 ```text
 Candidates read: 4531
@@ -158,34 +132,19 @@ stress_figure_21_diesel_added_dark_gene_response
 stress_figure_22_dark_gene_evidence_stack
 ```
 
-The plotting script was adjusted after the first pass to reduce text size, wrap long labels, tighten margins, and widen export canvases so the figures fit the plotting space more cleanly.
+## Active issue: rerun final synthesis with all stress contrasts
 
-## Active issue: final candidate synthesis and shortlist
-
-A final synthesis script has been added:
+A previous final synthesis output exists, but it used the narrower contrast set:
 
 ```text
-scripts/build_final_dark_candidate_shortlist.py
+diesel_added_wald,combined_wald,full_model_LRT,interactive_only_wald,interactive_only_LRT
 ```
 
-Recommended input:
-
-```text
-11_expression_context/equina_dark_candidates.de_context.tsv
-11_expression_context/equina_dark_candidates.de_significant_long.tsv
-```
-
-Recommended outputs:
-
-```text
-12_final_candidates/equina_dark_candidates.final_integrated.tsv
-12_final_candidates/equina_dark_candidates.final_shortlist.tsv
-12_final_candidates/equina_dark_candidates.final_summary.txt
-```
+That output should be treated as superseded once the all-stress-contrast version is regenerated.
 
 ## Immediate next action
 
-Run the final shortlist synthesis:
+Run the final shortlist synthesis again. No explicit `--focal-contrasts` argument is needed because the script now defaults to all contrasts in the significant-long DE table:
 
 ```bash
 cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
@@ -209,9 +168,14 @@ cat "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_summary.txt
 head -n 20 "${PROJECT_DIR}/12_final_candidates/equina_dark_candidates.final_shortlist.tsv"
 ```
 
+The summary should report:
+
+```text
+Stress contrast scope: all
+```
+
 ## Remaining steps
 
-- [ ] Run final integrated candidate synthesis.
+- [ ] Rerun final integrated candidate synthesis with all stress contrasts.
 - [ ] Review top 250 shortlist.
-- [ ] Decide whether the final shortlist should be narrowed to diesel-only candidates, focal-stress candidates, or all multi-stressor dark candidates.
-- [ ] Produce a final written interpretation of the stress-responsive dark-gene set.
+- [ ] Produce a final written interpretation of the all-stress-responsive dark-gene set.
