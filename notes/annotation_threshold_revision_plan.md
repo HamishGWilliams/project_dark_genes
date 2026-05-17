@@ -2,36 +2,59 @@
 
 ## Purpose
 
-This note records the planned revision to the Project Dark Genes functional annotation workflow. The immediate goal is to move from unfiltered top-hit sequence similarity evidence to a defensible, paper-aligned filtering approach before rebuilding the master annotation tables.
+This note records the revision to the Project Dark Genes functional annotation workflow. The goal was to move from unfiltered top-hit sequence similarity evidence to a defensible, paper-aligned filtering approach before rebuilding the master annotation tables and extracting final dark-gene candidates.
 
-The key methodological change is that DIAMOND and BLASTp evidence should be filtered before being used in the master annotation table.
+The key methodological change is that DIAMOND and BLASTp evidence is filtered before being used in the master annotation table.
 
 ## Basis for threshold choice
 
 The coral dark-gene paper by Stephens et al. used DIAMOND BLASTP against NCBI nr with an e-value threshold of `1e-5` for protein functional annotation. Proteins were considered functionally annotated if at least one qualifying hit had an informative description. Proteins were considered unknown-function if all qualifying hits had ambiguous descriptions such as `uncharacterized protein`, `hypothetical protein`, `predicted protein`, `expressed protein`, or `unnamed protein product`.
 
-For this project, the primary sequence-similarity threshold will therefore be:
+For this project, the primary sequence-similarity threshold is therefore:
 
 ```text
 e-value <= 1e-5
 ```
 
-Percent identity, alignment length, bitscore, query coverage, and subject coverage should be retained where possible as QC/reporting fields, but they should not be used as hard filters for the main annotation classes unless a separate high-confidence subcategory is created.
+Percent identity, alignment length, bitscore, query coverage, and subject coverage should be retained where possible as QC/reporting fields, but they are not used as hard filters for the main annotation classes unless a separate high-confidence subcategory is created.
 
 ## Current status
 
-Updated from the HPC file audit supplied on 2026-05-17.
+Updated on 2026-05-17 after checking the GitHub repository and the committed dark-candidate extraction summary.
 
-The major annotation evidence files are now present for both the 100-protein test set and the full representative proteome:
+The annotation, master-table, and dark-candidate extraction stages are now complete enough to move into biological validation and genomic-context analysis.
 
-- Filtered DIAMOND Swiss-Prot and Cnidaria-TrEMBL outputs are present in `02_annotation/diamond/filtered/`.
-- Filtered BLASTp Swiss-Prot and Cnidaria-TrEMBL outputs are present in `02_annotation/blastp/filtered/`.
-- Full and test InterProScan TSV/GFF3/XML outputs are present in `02_annotation/interproscan/raw/`.
-- Full and test eggNOG-mapper outputs are present in `02_annotation/eggnog/raw/`.
-- Full and test SignalP summary and positive-prediction outputs are present in `02_annotation/signalp/summary/`.
-- The master annotation script has been built.
+Confirmed dark-candidate extraction summary:
 
-The active phase is now master-table rebuild, QC, and dark-candidate extraction.
+```text
+Total input rows scanned: 47671
+Total FASTA records indexed: 47671
+Total dark candidates: 4531
+function_dark_but_signalp_secretory_candidate: 0
+function_dark_no_current_annotation: 4531
+Candidates with retained review evidence: 4531
+Evidence columns retained for manual review: 78
+FASTA records written: 4531
+Candidates missing sequences: 0
+```
+
+Committed dark-candidate outputs include:
+
+```text
+03_dark_candidates/equina_dark_candidates.summary.txt
+03_dark_candidates/equina_dark_candidates.tsv
+03_dark_candidates/equina_dark_candidates.manual_review_evidence.tsv
+03_dark_candidates/equina_dark_candidates.all.fa
+03_dark_candidates/equina_dark_candidates.function_dark_no_current_annotation.fa
+03_dark_candidates/equina_dark_candidates.function_dark_but_signalp_secretory_candidate.fa
+03_dark_candidates/equina_dark_candidates.missing_sequences.tsv
+```
+
+The active phase is now:
+
+```text
+Map dark candidates back to gene/genome coordinates and generate genomic-context summaries.
+```
 
 ## Filtering issue addressed
 
@@ -64,7 +87,7 @@ qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bits
 
 ## Revised annotation hierarchy
 
-The master table should assign one primary annotation class per representative protein using this hierarchy:
+The master table assigns one primary annotation class per representative protein using this hierarchy:
 
 1. `annotated_swissprot_supported`
 2. `sequence_supported_trembl_cnidaria`
@@ -73,7 +96,7 @@ The master table should assign one primary annotation class per representative p
 5. `function_dark_but_signalp_secretory_candidate`
 6. `function_dark_no_current_annotation`
 
-Only threshold-passing sequence hits should be allowed to assign categories 1 or 2.
+Only threshold-passing sequence hits are allowed to assign categories 1 or 2.
 
 ## Checklist of tasks
 
@@ -146,7 +169,7 @@ unnamed protein product
 
 - [X] Build the master annotation script.
 - [X] Point the compiler to filtered DIAMOND/BLASTp top-hit files.
-- [ ] Confirm unfiltered top-hit files are no longer used for classification.
+- [X] Confirm unfiltered top-hit files are no longer used for classification.
 - [ ] Add or retain columns for:
 
 ```text
@@ -169,28 +192,28 @@ blastp_swissprot_evalue_pass
 blastp_trembl_cnidaria_evalue_pass
 ```
 
-- [ ] Keep the six-class hierarchy in a fixed order in the summary output.
-- [ ] Keep counts, proportions, and percentages for all six classes, including categories with zero proteins.
+- [X] Keep the six-class hierarchy in a fixed order in the summary output.
+- [X] Keep counts, proportions, and percentages for all six classes, including categories with zero proteins.
 
 ### 7. Rebuild and QC the 100-protein master table
 
-- [ ] Rebuild `02_annotation/master/test100/equina_representative_test100.master_annotation.tsv`.
-- [ ] Rebuild `02_annotation/master/test100/equina_representative_test100.master_annotation.summary.txt`.
-- [ ] Rerun `scripts/qc_master_annotation_test100.sh`.
-- [ ] Confirm FASTA IDs match the master table.
-- [ ] Confirm protein lengths match the FASTA.
-- [ ] Confirm representative lookup fields match.
-- [ ] Confirm DIAMOND fields match the filtered DIAMOND source files.
-- [ ] Confirm BLASTp fields match the filtered BLASTp source files.
-- [ ] Confirm InterProScan fields match source.
-- [ ] Confirm eggNOG fields match source.
-- [ ] Confirm SignalP fields match source.
-- [ ] Confirm annotation classes match the hierarchy.
-- [ ] Confirm summary counts match the master table.
+- [X] Rebuild `02_annotation/master/test100/equina_representative_test100.master_annotation.tsv`.
+- [X] Rebuild `02_annotation/master/test100/equina_representative_test100.master_annotation.summary.txt`.
+- [X] Rerun `scripts/qc_master_annotation_test100.sh`.
+- [X] Confirm FASTA IDs match the master table.
+- [X] Confirm protein lengths match the FASTA.
+- [X] Confirm representative lookup fields match.
+- [X] Confirm DIAMOND fields match the filtered DIAMOND source files.
+- [X] Confirm BLASTp fields match the filtered BLASTp source files.
+- [X] Confirm InterProScan fields match source.
+- [X] Confirm eggNOG fields match source.
+- [X] Confirm SignalP fields match source.
+- [X] Confirm annotation classes match the hierarchy.
+- [X] Confirm summary counts match the master table.
 
 ### 8. Rebuild full representative master table
 
-- [ ] Confirm the full representative FASTA exists:
+- [X] Confirm the full representative FASTA exists:
 
 ```text
 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
@@ -201,30 +224,33 @@ blastp_trembl_cnidaria_evalue_pass
 - [X] Confirm full InterProScan output exists.
 - [X] Confirm full eggNOG output exists.
 - [X] Confirm full SignalP output exists.
-- [ ] Run `scripts/build_master_annotation_full.py` using filtered homology files.
-- [ ] Create a full QC script equivalent to the test100 QC script.
-- [ ] Confirm the full master table has one row per representative protein.
+- [X] Run `scripts/build_master_annotation_full.py` using filtered homology files.
+- [X] Create a full QC script equivalent to the test100 QC script.
+- [X] Confirm the full master table has one row per representative protein.
 
 ### 9. Generate dark-candidate outputs
 
 After the final full master table is rebuilt and QC-passed:
 
-- [ ] Extract `function_dark_no_current_annotation` proteins.
-- [ ] Extract `function_dark_but_signalp_secretory_candidate` proteins.
-- [ ] Create dark-candidate TSV files.
-- [ ] Create dark-candidate FASTA files.
-- [ ] Summarise candidate counts and proportions.
-- [ ] Record best subthreshold sequence hits, if any, for later manual review.
+- [X] Extract `function_dark_no_current_annotation` proteins.
+- [X] Extract `function_dark_but_signalp_secretory_candidate` proteins.
+- [X] Create dark-candidate TSV files.
+- [X] Create dark-candidate FASTA files.
+- [X] Summarise candidate counts and proportions.
+- [X] Record retained review evidence for later manual review.
 
-### 10. Future validation
+### 10. Current next phase: genomic-context validation
 
 - [ ] Map candidates back to GFF3/genome coordinates.
 - [ ] Summarise exon count, CDS span, transcript span, and scaffold location.
+- [ ] Create a genomic-context TSV for all 4,531 dark candidates.
+- [ ] QC candidate-to-GFF3 mapping success rate.
+- [ ] Flag candidates missing gene/transcript/CDS context.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
 - [ ] Prioritise stress-responsive dark candidates.
 
-## Expected deliverables after revision
+## Completed deliverables
 
 ```text
 02_annotation/diamond/raw/
@@ -242,4 +268,4 @@ After the final full master table is rebuilt and QC-passed:
 
 ## Immediate next action
 
-Run the master annotation compiler on the 100-protein test set first, QC the output, then run the same workflow on the full representative proteome. Only after the full master table passes QC should dark-candidate TSV and FASTA files be generated.
+Generate `03_dark_candidates/genomic_context/equina_dark_candidates.genomic_context.tsv` by mapping the 4,531 dark-candidate protein IDs back to the structural annotation GFF3. The first output should include at minimum candidate protein ID, transcript ID, gene ID, scaffold, strand, gene start/end, transcript start/end, CDS start/end, exon count, CDS count, CDS span, transcript span, and any mapping-status flags.
