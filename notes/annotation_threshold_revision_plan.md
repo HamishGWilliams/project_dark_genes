@@ -18,11 +18,26 @@ e-value <= 1e-5
 
 Percent identity, alignment length, bitscore, query coverage, and subject coverage should be retained where possible as QC/reporting fields, but they should not be used as hard filters for the main annotation classes unless a separate high-confidence subcategory is created.
 
-## Current issue to fix
+## Current status
 
-The current DIAMOND/BLASTp workflow produced top-hit files by taking the first hit per query. This is not sufficient for final dark-gene classification because weak hits may be retained. The workflow must first filter hits by e-value and then select the top retained hit.
+Updated from the HPC file audit supplied on 2026-05-17.
 
-Current problematic pattern:
+The major annotation evidence files are now present for both the 100-protein test set and the full representative proteome:
+
+- Filtered DIAMOND Swiss-Prot and Cnidaria-TrEMBL outputs are present in `02_annotation/diamond/filtered/`.
+- Filtered BLASTp Swiss-Prot and Cnidaria-TrEMBL outputs are present in `02_annotation/blastp/filtered/`.
+- Full and test InterProScan TSV/GFF3/XML outputs are present in `02_annotation/interproscan/raw/`.
+- Full and test eggNOG-mapper outputs are present in `02_annotation/eggnog/raw/`.
+- Full and test SignalP summary and positive-prediction outputs are present in `02_annotation/signalp/summary/`.
+- The master annotation script has been built.
+
+The active phase is now master-table rebuild, QC, and dark-candidate extraction.
+
+## Filtering issue addressed
+
+The previous DIAMOND/BLASTp workflow produced top-hit files by taking the first hit per query. This was not sufficient for final dark-gene classification because weak hits could be retained. The revised workflow filters hits by e-value before selecting the retained top hit.
+
+Previous problematic pattern:
 
 ```bash
 awk -F '\t' '!seen[$1]++' raw_hits.tsv > top_hits.tsv
@@ -66,36 +81,40 @@ Only threshold-passing sequence hits should be allowed to assign categories 1 or
 
 - [X] Record the decision to use `e-value <= 1e-5` for DIAMOND/BLASTp annotation evidence.
 - [X] Note that this threshold is aligned with the Stephens et al. coral dark-gene workflow.
-- [ ] Document that identity and coverage are retained for QC/reporting, not as hard filters in the main classification.
+- [X] Document that identity and coverage are retained for QC/reporting, not as hard filters in the main classification.
 - [ ] Add a short methods note explaining ambiguous-description filtering.
 
-### 2. DIAMOND script updates
+### 2. DIAMOND script/output updates
 
-- [ ] Add explicit `--evalue 1e-5` to DIAMOND searches.
-- [ ] Consider using `--ultra-sensitive` for final searches.
+- [X] Add explicit `--evalue 1e-5` to DIAMOND searches or apply equivalent post-search e-value filtering.
+- [ ] Consider using `--ultra-sensitive` for final reruns, if reruns become necessary.
 - [ ] Consider using `--max-target-seqs 0` or another sufficiently exhaustive setting if retaining multiple hits for description filtering.
-- [ ] Update DIAMOND output format to include `qlen` and `slen`:
+- [ ] Confirm DIAMOND output format includes `qlen` and `slen` where needed for coverage QC:
 
 ```text
 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
 ```
 
-- [ ] Write raw DIAMOND outputs to `02_annotation/diamond/raw/`.
-- [ ] Write e-value-filtered DIAMOND outputs to `02_annotation/diamond/filtered/`.
-- [ ] Write filtered top-hit DIAMOND files after applying the e-value threshold.
+- [ ] Confirm raw DIAMOND outputs are retained in `02_annotation/diamond/raw/`.
+- [X] Write e-value-filtered DIAMOND outputs to `02_annotation/diamond/filtered/`.
+- [X] Write filtered top-hit DIAMOND files after applying the e-value threshold.
+- [X] Confirm test100 filtered DIAMOND Swiss-Prot and Cnidaria-TrEMBL outputs exist.
+- [X] Confirm full filtered DIAMOND Swiss-Prot and Cnidaria-TrEMBL outputs exist.
 
-### 3. BLASTp script updates
+### 3. BLASTp script/output updates
 
-- [ ] Add explicit `-evalue 1e-5` to BLASTp searches.
-- [ ] Update BLASTp output format to include `qlen` and `slen`:
+- [X] Add explicit `-evalue 1e-5` to BLASTp searches or apply equivalent post-search e-value filtering.
+- [ ] Confirm BLASTp output format includes `qlen` and `slen` where needed for coverage QC:
 
 ```text
 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen
 ```
 
-- [ ] Write raw BLASTp outputs to `02_annotation/blastp/raw/`.
-- [ ] Write e-value-filtered BLASTp outputs to `02_annotation/blastp/filtered/`.
-- [ ] Write filtered top-hit BLASTp files after applying the e-value threshold.
+- [ ] Confirm raw BLASTp outputs are retained in `02_annotation/blastp/raw/`.
+- [X] Write e-value-filtered BLASTp outputs to `02_annotation/blastp/filtered/`.
+- [X] Write filtered best-hit BLASTp files after applying the e-value threshold.
+- [X] Confirm test100 filtered BLASTp Swiss-Prot and Cnidaria-TrEMBL outputs exist.
+- [X] Confirm full filtered BLASTp Swiss-Prot and Cnidaria-TrEMBL outputs exist.
 
 ### 4. Ambiguous-description filtering
 
@@ -117,16 +136,17 @@ unnamed protein product
 
 ### 5. Rebuild 100-protein test homology files
 
-- [ ] Regenerate or filter DIAMOND Swiss-Prot representative hits.
-- [ ] Regenerate or filter DIAMOND Cnidaria-TrEMBL representative hits.
-- [ ] Regenerate or filter BLASTp Swiss-Prot representative hits once the jobs finish.
-- [ ] Regenerate or filter BLASTp Cnidaria-TrEMBL representative hits once the jobs finish.
-- [ ] Confirm filtered files contain only hits with `e-value <= 1e-5`.
+- [X] Regenerate or filter DIAMOND Swiss-Prot representative hits.
+- [X] Regenerate or filter DIAMOND Cnidaria-TrEMBL representative hits.
+- [X] Regenerate or filter BLASTp Swiss-Prot representative hits.
+- [X] Regenerate or filter BLASTp Cnidaria-TrEMBL representative hits.
+- [ ] Confirm filtered files contain only hits with `e-value <= 1e-5` by direct column check.
 
-### 6. Update master annotation compiler
+### 6. Master annotation compiler
 
-- [ ] Point the compiler to filtered DIAMOND/BLASTp top-hit files.
-- [ ] Ensure unfiltered top-hit files are no longer used for classification.
+- [X] Build the master annotation script.
+- [X] Point the compiler to filtered DIAMOND/BLASTp top-hit files.
+- [ ] Confirm unfiltered top-hit files are no longer used for classification.
 - [ ] Add or retain columns for:
 
 ```text
@@ -161,7 +181,7 @@ blastp_trembl_cnidaria_evalue_pass
 - [ ] Confirm protein lengths match the FASTA.
 - [ ] Confirm representative lookup fields match.
 - [ ] Confirm DIAMOND fields match the filtered DIAMOND source files.
-- [ ] Confirm BLASTp fields match the filtered BLASTp source files when BLASTp finishes.
+- [ ] Confirm BLASTp fields match the filtered BLASTp source files.
 - [ ] Confirm InterProScan fields match source.
 - [ ] Confirm eggNOG fields match source.
 - [ ] Confirm SignalP fields match source.
@@ -176,11 +196,11 @@ blastp_trembl_cnidaria_evalue_pass
 02_annotation/input/equina_representative_longest_per_gene.no_stop.fa
 ```
 
-- [ ] Confirm full filtered DIAMOND files exist.
-- [ ] Confirm full filtered BLASTp files exist once BLASTp jobs finish.
-- [ ] Confirm full InterProScan output exists.
-- [ ] Confirm full eggNOG output exists.
-- [ ] Confirm full SignalP output exists.
+- [X] Confirm full filtered DIAMOND files exist.
+- [X] Confirm full filtered BLASTp files exist.
+- [X] Confirm full InterProScan output exists.
+- [X] Confirm full eggNOG output exists.
+- [X] Confirm full SignalP output exists.
 - [ ] Run `scripts/build_master_annotation_full.py` using filtered homology files.
 - [ ] Create a full QC script equivalent to the test100 QC script.
 - [ ] Confirm the full master table has one row per representative protein.
@@ -220,6 +240,6 @@ After the final full master table is rebuilt and QC-passed:
 03_dark_candidates/
 ```
 
-## Current status note
+## Immediate next action
 
-The 100-protein master table structure and non-BLASTp source integration have already validated successfully. The remaining work is to revise homology filtering, regenerate filtered sequence-similarity files, then rebuild and QC the test and full master tables.
+Run the master annotation compiler on the 100-protein test set first, QC the output, then run the same workflow on the full representative proteome. Only after the full master table passes QC should dark-candidate TSV and FASTA files be generated.
