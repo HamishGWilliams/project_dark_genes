@@ -6,14 +6,14 @@ Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/12_final_candida
 Candidate rows read: 4531
 Significant-DE candidate IDs indexed: 726
 Shortlist rows written: 250
-Focal contrasts: diesel_added_wald,combined_wald,full_model_LRT,interactive_only_wald,interactive_only_LRT
+Stress contrast scope: all
+Stress contrasts used: combined_wald,diesel_added_wald,full_model_LRT,interactive_only_LRT,interactive_only_wald,salinity_added_wald,salinity_only_LRT,salinity_only_wald
 
 Final shortlist category counts:
 - retain_context_only: 3767
-- top_stress_responsive_dark_candidate: 521
-- DE_dark_candidate_non_focal_contrast: 176
-- stress_responsive_dark_candidate: 57
-- strong_stress_responsive_dark_candidate: 10
+- top_stress_responsive_dark_candidate: 684
+- stress_responsive_dark_candidate: 67
+- strong_stress_responsive_dark_candidate: 13
 
 Priority tier counts in input:
 - high_priority: 3903
@@ -28,7 +28,7 @@ Most common shortlist evidence reasons:
 - possible_biological_gene_family_expansion: 1385
 - no_repeat_TE_overlap: 1202
 - DE_significant_any_contrast: 764
-- focal_stress_DE: 588
+- stress_contrast_DE: 764
 - medium_priority: 420
 - abs_logFC_ge_2: 283
 - padj_le_0.001: 235
