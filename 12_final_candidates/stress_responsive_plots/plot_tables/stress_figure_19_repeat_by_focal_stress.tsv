@@ -1,0 +1,5 @@
+repeat_status	focal_stress_responsive	n_dark_candidates
+no repeat overlap	Not focal stress-responsive	1055
+repeat overlap	Not focal stress-responsive	2922
+no repeat overlap	Focal stress-responsive	147
+repeat overlap	Focal stress-responsive	407

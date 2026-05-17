@@ -1,0 +1,17 @@
+contrast	contrast_pretty	direction	n_dark_candidates
+combined_wald	Combined Wald	down	259
+diesel_added_wald	Diesel added Wald	down	53
+full_model_LRT	full model LRT	down	188
+interactive_only_LRT	Interaction only LRT	down	1
+interactive_only_wald	Interaction only Wald	down	1
+salinity_added_wald	Salinity added Wald	down	230
+salinity_only_LRT	Salinity only LRT	down	152
+salinity_only_wald	Salinity only Wald	down	159
+combined_wald	Combined Wald	up	147
+diesel_added_wald	Diesel added Wald	up	16
+full_model_LRT	full model LRT	up	113
+interactive_only_LRT	Interaction only LRT	up	2
+interactive_only_wald	Interaction only Wald	up	6
+salinity_added_wald	Salinity added Wald	up	168
+salinity_only_LRT	Salinity only LRT	up	117
+salinity_only_wald	Salinity only Wald	up	111
