@@ -2,12 +2,9 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, and filtered repeat/TE-overlap integration are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, filtered repeat/TE-overlap integration, and two-experiment methylation/DMR overlap integration are complete.
 
-The active phase is now two-experiment methylation/DMR overlap integration for the 4,531 dark candidates:
-
-- `exp1_acute_naive_diesel`: acute/naive response to diesel exposure.
-- `exp2_primed_acclimated_diesel`: primed/acclimated response to diesel exposure.
+The active phase is now RNA-seq expression evidence integration for the 4,531 dark candidates.
 
 ## Repository status
 
@@ -24,6 +21,7 @@ The active phase is now two-experiment methylation/DMR overlap integration for t
 - Filtered repeat/TE-overlap table and summary are tracked.
 - DMR overlap script is tracked: `scripts/add_dmr_overlap_context.py`.
 - Two-experiment DMR wrapper is tracked: `scripts/run_dmr_overlap_experiments.sh`.
+- Two-experiment DMR overlap summaries, tables, and manifest are tracked.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -208,88 +206,92 @@ no_repeat_overlap: 1202
 
 Interpretation: after restricting to repeat-like GFF3 feature types, 3,329 dark candidates overlap repeat/TE-like intervals and 1,202 do not. The previous all-features result should be treated as diagnostic only.
 
-## Active issue: methylation/DMR overlap integration
+### Methylation/DMR overlap integration
 
-Two DMR inputs are now available locally under:
+- [X] Add `scripts/add_dmr_overlap_context.py`.
+- [X] Add `scripts/run_dmr_overlap_experiments.sh`.
+- [X] Run DMR overlap for `exp1_acute_naive_diesel`.
+- [X] Run DMR overlap for `exp2_primed_acclimated_diesel`.
+- [X] Confirm DMR parser successfully indexed intervals for both experiments.
+- [X] Confirm no dark candidates overlap DMR intervals in either diesel-response experiment.
 
-```text
-/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap
-```
-
-They represent:
-
-```text
-exp1_acute_naive_diesel: acute/naive response to diesel exposure
-exp2_primed_acclimated_diesel: primed/acclimated response to diesel exposure
-```
-
-The preferred input for candidate intervals is:
+Confirmed exp1 acute/naive diesel DMR-overlap summary:
 
 ```text
-09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
+Candidate rows read: 4531
+dmr_format_used: delimited_table
+dmr_contig_column: seqnames
+dmr_start_column: start
+dmr_end_column: end
+dmr_id_column: ID
+dmr_effect_column: meth.diff
+parsed_table: 16590
+DMR contigs indexed: 16590
+no_dmr_overlap: 4531
 ```
 
-A reusable two-experiment wrapper has been added:
+Confirmed exp2 primed/acclimated diesel DMR-overlap summary:
 
 ```text
-scripts/run_dmr_overlap_experiments.sh
+Candidate rows read: 4531
+dmr_format_used: delimited_table
+dmr_contig_column: seqnames
+dmr_start_column: start
+dmr_end_column: end
+dmr_id_column: ID
+dmr_effect_column: meth.diff
+parsed_table: 22813
+DMR contigs indexed: 22813
+no_dmr_overlap: 4531
 ```
 
-Expected outputs:
+Interpretation: after parser correction, this is a valid negative result. None of the 4,531 dark candidates overlap the acute/naive or primed/acclimated diesel-response DMR intervals.
+
+## Active issue: RNA-seq expression evidence integration
+
+Next, determine whether the dark candidates are expressed and whether any are differentially expressed under diesel exposure. This is now the key biological validation layer because DMR overlap is negative.
+
+The preferred input for candidate intervals/evidence is currently:
 
 ```text
 10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.tsv
-10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.summary.txt
-10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.tsv
-10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.summary.txt
-10_methylation_overlap/equina_dark_candidates.dmr_overlap.experiment_manifest.tsv
 ```
+
+or the equivalent exp2 table. Since both DMR overlaps are negative and contain the same candidates, either can be used as the starting candidate table for expression integration.
 
 ## Immediate next action
 
-Run the DMR overlap wrapper. It will try to auto-detect filenames containing `exp1` and `exp2` in `10_methylation_overlap/`:
+Locate RNA-seq expression or differential-expression tables on Maxwell. Useful file types include:
 
-```bash
-cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
-
-git pull
-
-sbatch scripts/run_dmr_overlap_experiments.sh
+```text
+TPM/FPKM/count matrices
+salmon quant.sf / tximport outputs
+featureCounts count tables
+DESeq2/edgeR differential-expression results
 ```
 
-If auto-detection fails or picks the wrong files, rerun with explicit paths:
+Search pattern:
 
 ```bash
-EXP1_DMR=/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/<exp1_file> \
-EXP2_DMR=/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/<exp2_file> \
-sbatch scripts/run_dmr_overlap_experiments.sh
+cd /uoa/scratch/users/r02hw22/project_dark_genes
+
+find . -type f \( \
+  -iname "*tpm*" -o \
+  -iname "*fpkm*" -o \
+  -iname "*counts*" -o \
+  -iname "*featurecounts*" -o \
+  -iname "*deseq*" -o \
+  -iname "*edger*" -o \
+  -iname "*diff*expr*" -o \
+  -iname "quant.sf" \
+\) | head -n 100
 ```
 
-If the files are BED-style, add:
-
-```bash
-DMR_FORMAT=bed \
-EXP1_DMR=/path/to/exp1.bed \
-EXP2_DMR=/path/to/exp2.bed \
-sbatch scripts/run_dmr_overlap_experiments.sh
-```
-
-After completion, inspect:
-
-```bash
-PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
-
-cat "${PROJECT_DIR}/10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.summary.txt"
-cat "${PROJECT_DIR}/10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.summary.txt"
-cat "${PROJECT_DIR}/10_methylation_overlap/equina_dark_candidates.dmr_overlap.experiment_manifest.tsv"
-```
-
-Each overlap table should contain 4,531 candidate rows plus one header.
+Once the expression table paths and column names are known, add an expression-integration step that classifies candidates as expressed/not expressed and diesel-responsive/not diesel-responsive.
 
 ## Remaining biological validation steps
 
-- [ ] Run two-experiment DMR overlap integration.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
-- [ ] Prioritise stress-responsive dark candidates.
-- [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, DMR, expression, methylation, and annotation-evidence fields.
+- [ ] Flag diesel-responsive dark candidates if DE results are available.
+- [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, DMR, expression, diesel-response, methylation, and annotation-evidence fields.
