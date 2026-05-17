@@ -221,3 +221,10 @@ eggnog_data/
 03_dark_candidates/genomic_context/*.faa
 03_dark_candidates/genomic_context/*.fasta
 !03_dark_candidates/genomic_context/*.summary.txt
+
+# Large figure/table inputs generated from annotation and integration steps
+# These can be regenerated locally and exceed GitHub's normal file-size limits.
+08_figures/figure_tables/sanitised_inputs/*.tsv
+08_figures/figure_tables/sanitised_inputs/*.tsv.gz
+08_figures/figure_tables/sanitised_inputs/*.csv
+08_figures/figure_tables/sanitised_inputs/*.csv.gz
