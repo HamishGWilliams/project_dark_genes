@@ -4,7 +4,10 @@
 
 The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, and filtered repeat/TE-overlap integration are complete.
 
-The active phase is now methylation/DMR overlap integration for the 4,531 dark candidates.
+The active phase is now two-experiment methylation/DMR overlap integration for the 4,531 dark candidates:
+
+- `exp1_acute_naive_diesel`: acute/naive response to diesel exposure.
+- `exp2_primed_acclimated_diesel`: primed/acclimated response to diesel exposure.
 
 ## Repository status
 
@@ -19,6 +22,8 @@ The active phase is now methylation/DMR overlap integration for the 4,531 dark c
 - BUSCO-backed compact figure tables and figures are tracked.
 - Repeat-overlap workflow script is tracked: `scripts/add_repeat_overlap_context.py`.
 - Filtered repeat/TE-overlap table and summary are tracked.
+- DMR overlap script is tracked: `scripts/add_dmr_overlap_context.py`.
+- Two-experiment DMR wrapper is tracked: `scripts/run_dmr_overlap_experiments.sh`.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -205,7 +210,18 @@ Interpretation: after restricting to repeat-like GFF3 feature types, 3,329 dark 
 
 ## Active issue: methylation/DMR overlap integration
 
-Next, integrate methylation/DMR context with the BUSCO- and repeat-aware prioritised dark candidates.
+Two DMR inputs are now available locally under:
+
+```text
+/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap
+```
+
+They represent:
+
+```text
+exp1_acute_naive_diesel: acute/naive response to diesel exposure
+exp2_primed_acclimated_diesel: primed/acclimated response to diesel exposure
+```
 
 The preferred input for candidate intervals is:
 
@@ -213,21 +229,67 @@ The preferred input for candidate intervals is:
 09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
 ```
 
-The DMR input should be a BED-like or TSV file with at least contig, start, and end columns. If multiple DMR sets exist, run each separately first, then merge summaries later.
+A reusable two-experiment wrapper has been added:
+
+```text
+scripts/run_dmr_overlap_experiments.sh
+```
+
+Expected outputs:
+
+```text
+10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.tsv
+10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.summary.txt
+10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.tsv
+10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.summary.txt
+10_methylation_overlap/equina_dark_candidates.dmr_overlap.experiment_manifest.tsv
+```
 
 ## Immediate next action
 
-Locate the DMR/methylation interval files on Maxwell, then run a DMR-overlap script against the repeat-aware candidate table. A reusable script should produce:
+Run the DMR overlap wrapper. It will try to auto-detect filenames containing `exp1` and `exp2` in `10_methylation_overlap/`:
 
-```text
-10_methylation_overlap/equina_dark_candidates.dmr_overlap.tsv
-10_methylation_overlap/equina_dark_candidates.dmr_overlap.summary.txt
+```bash
+cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
+
+git pull
+
+sbatch scripts/run_dmr_overlap_experiments.sh
 ```
+
+If auto-detection fails or picks the wrong files, rerun with explicit paths:
+
+```bash
+EXP1_DMR=/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/<exp1_file> \
+EXP2_DMR=/uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_overlap/<exp2_file> \
+sbatch scripts/run_dmr_overlap_experiments.sh
+```
+
+If the files are BED-style, add:
+
+```bash
+DMR_FORMAT=bed \
+EXP1_DMR=/path/to/exp1.bed \
+EXP2_DMR=/path/to/exp2.bed \
+sbatch scripts/run_dmr_overlap_experiments.sh
+```
+
+After completion, inspect:
+
+```bash
+PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
+
+cat "${PROJECT_DIR}/10_methylation_overlap/exp1_acute_naive_diesel/equina_dark_candidates.exp1_acute_naive_diesel.dmr_overlap.summary.txt"
+cat "${PROJECT_DIR}/10_methylation_overlap/exp2_primed_acclimated_diesel/equina_dark_candidates.exp2_primed_acclimated_diesel.dmr_overlap.summary.txt"
+cat "${PROJECT_DIR}/10_methylation_overlap/equina_dark_candidates.dmr_overlap.experiment_manifest.tsv"
+```
+
+Each overlap table should contain 4,531 candidate rows plus one header.
 
 ## Remaining biological validation steps
 
-- [ ] Add methylation/DMR overlap context.
+- [ ] Run two-experiment DMR overlap integration.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
 - [ ] Prioritise stress-responsive dark candidates.
-- [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, expression, methylation, and annotation-evidence fields.
+- [ ] Produce final candidate shortlist with genome, duplication, BUSCO, repeat/TE, DMR, expression, methylation, and annotation-evidence fields.
