@@ -6,7 +6,8 @@ Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/10_methylation_o
 Candidate rows read: 4531
 
 Detected DMR columns/settings:
-- dmr_format_used: tsv
+- delimiter: tab
+- dmr_format_used: delimited_table
 - dmr_contig_column: seqnames
 - dmr_start_column: start
 - dmr_end_column: end
@@ -14,8 +15,8 @@ Detected DMR columns/settings:
 - dmr_effect_column: meth.diff
 
 DMR parse counts:
-- bad_coordinates: 16590
-- DMR contigs indexed: 0
+- parsed_table: 16590
+- DMR contigs indexed: 16590
 
 DMR-overlap status counts:
 - no_dmr_overlap: 4531
