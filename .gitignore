@@ -201,8 +201,23 @@ eggnog_data/
 02_annotation/diamond/raw/
 02_annotation/diamond/filtered/*.diamond.tsv
 
-# genome_loopkup tables
+# Genome lookup tables
 06_genome_lookup/*.tsv
 
 # BUSCO duplication context files
 07_duplication_context/*.tsv
+
+# Dark-candidate extraction outputs generated on HPC
+# Keep small summary files trackable; keep candidate tables/FASTA reports local unless deliberately force-added.
+03_dark_candidates/*.tsv
+03_dark_candidates/*.fa
+03_dark_candidates/*.faa
+03_dark_candidates/*.fasta
+!03_dark_candidates/*.summary.txt
+
+# Dark-candidate genomic-context outputs generated on HPC
+03_dark_candidates/genomic_context/*.tsv
+03_dark_candidates/genomic_context/*.fa
+03_dark_candidates/genomic_context/*.faa
+03_dark_candidates/genomic_context/*.fasta
+!03_dark_candidates/genomic_context/*.summary.txt
