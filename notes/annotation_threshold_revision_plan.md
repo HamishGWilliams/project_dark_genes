@@ -2,9 +2,11 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, duplication/prioritisation rerun, and candidate-level figure regeneration are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, and BUSCO-backed prioritisation summary are complete.
 
-Before moving to repeat/TE-overlap integration, the active phase is now BUSCO-backed duplication validation. This is needed because the current duplication/prioritisation run used `BUSCO_FULL_TABLE=NA`, so priority tiers currently reflect genome linking and exact-sequence clustering, but not BUSCO-validated scaffold duplication.
+One synchronisation item remains before moving on: the tracked duplication summary now reflects BUSCO-backed validation, but the tracked compact figure tables for duplication interpretation and priority tiers still appear to reflect the previous no-BUSCO candidate-level figure run. Figures 13–15 should be regenerated and pushed from the BUSCO-backed prioritised table before treating the figure set as final.
+
+After that, the active phase moves to repeat/TE-overlap integration for the 4,531 dark candidates.
 
 ## Repository status
 
@@ -14,9 +16,9 @@ Before moving to repeat/TE-overlap integration, the active phase is now BUSCO-ba
 - Full generated genome-linked table remains local/generated and ignored: `03_dark_candidates/genomic_context/equina_dark_candidates.genome_linked.tsv`
 - First-pass genome-linking summary is tracked.
 - Multiplicity-QC summary is tracked.
-- Duplication/prioritisation summary is tracked.
-- Corrected figures, figure manifest, compact figure tables, scripts, and notes are tracked.
-- BUSCO-backed validation wrapper has been added: `scripts/run_busco_duplication_validation.sh`.
+- BUSCO-backed duplication/prioritisation summary is tracked.
+- BUSCO-backed validation wrapper is tracked: `scripts/run_busco_duplication_validation.sh`.
+- Corrected figures, figure manifest, compact figure tables, scripts, and notes are tracked, but Figures 13–15 need one more refresh from the BUSCO-backed prioritised table.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -110,16 +112,16 @@ matched_primary_from_multiple_strict: 4531
 rank_1: 4531
 ```
 
-### Corrected duplication/prioritisation and figures
+### Corrected candidate-level duplication/prioritisation and figures
 
 - [X] Rerun duplication/prioritisation using the primary genome-linked table.
 - [X] Regenerate Figures 05–15 using candidate-level inputs.
-- [X] Confirm Figure 05 now sums to 4,531 genome-linked candidates.
-- [X] Confirm Figure 14 priority tiers now sum to 4,531 candidates.
+- [X] Confirm Figure 05 sums to 4,531 genome-linked candidates.
+- [X] Confirm Figure 14 priority tiers sum to 4,531 candidates in the no-BUSCO candidate-level run.
 - [X] Track corrected duplication/prioritisation summary.
 - [X] Track corrected compact figure tables and figures.
 
-Confirmed corrected candidate-level figure counts:
+Previous no-BUSCO candidate-level counts:
 
 ```text
 Figure 05 genome-linking status:
@@ -131,90 +133,82 @@ medium_priority: 322
 low_priority_or_manual_review: 0
 ```
 
-Confirmed duplication/prioritisation summary:
+### BUSCO-backed duplication validation
+
+- [X] Add `scripts/run_busco_duplication_validation.sh`.
+- [X] Run BUSCO-backed duplication validation.
+- [X] Confirm duplication/prioritisation summary now uses a real BUSCO full table.
+- [X] Confirm BUSCO duplicated loci and duplication-rich scaffolds are incorporated in the duplication summary.
+- [ ] Regenerate and push compact Figures 13–15 from the BUSCO-backed prioritised table.
+
+Confirmed BUSCO-backed duplication/prioritisation summary:
 
 ```text
 Genome-linked candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
-BUSCO full table: NA
-Cluster method: exact_python_fallback
+BUSCO full table: /uoa/scratch/users/r02hw22/project_dark_genes/05_busco/equina_representative_longest_per_gene_metazoa_odb10/full_table.tsv
+Total BUSCO rows parsed: 1497
+Duplicated BUSCO loci parsed: 950
+BUSCO-duplication-rich scaffolds: 74
 Cluster rows written: 4531
 Unique clusters: 3371
 large_near_identical_clusters_5_plus: 104
 singleton_clusters: 2926
 small_near_identical_clusters_2_to_4: 341
 single_copy_or_no_near_identical_dark_duplicate: 2926
-possible_biological_gene_family_expansion: 1605
-high_priority: 4209
-medium_priority: 322
+possible_biological_gene_family_expansion: 1385
+possible_assembly_redundancy_or_haplotig_duplication: 220
+high_priority: 3903
+medium_priority: 420
+low_priority_or_manual_review: 208
 ```
 
-Important caveat: BUSCO context is currently unavailable in this run because `BUSCO_FULL_TABLE` was `NA`. Duplication/prioritisation currently reflects exact-sequence clustering and genome context, not BUSCO-validated scaffold duplication.
+Interpretation: BUSCO validation moved 220 candidates into an assembly-redundancy/haplotig-duplication interpretation and reduced the high-priority candidate set from 4,209 to 3,903.
 
-## Active issue: BUSCO-backed duplication validation
+## Active issue: refresh figures from BUSCO-backed prioritisation
 
-A new wrapper has been added:
+The tracked duplication summary is BUSCO-backed, but the tracked compact figure tables still show the previous no-BUSCO counts for Figure 13 and Figure 14. Refresh these before proceeding.
+
+Expected BUSCO-backed figure table targets:
 
 ```text
-scripts/run_busco_duplication_validation.sh
+Figure 13 duplication interpretation:
+single_copy_or_no_near_identical_dark_duplicate: 2926
+possible_biological_gene_family_expansion: 1385
+possible_assembly_redundancy_or_haplotig_duplication: 220
+
+Figure 14 priority tiers:
+high_priority: 3903
+medium_priority: 420
+low_priority_or_manual_review: 208
 ```
-
-This script will:
-
-1. Locate an existing BUSCO `full_table.tsv`, if present.
-2. Otherwise run BUSCO in protein mode on the representative no-stop proteome.
-3. Copy the BUSCO `full_table.tsv` and short summary into a stable `05_busco/` location.
-4. Rerun `scripts/add_busco_duplication_context.py` using the primary genome-linked dark-candidate table and the BUSCO full table.
-5. Rerun Figures 05–15 with BUSCO-backed prioritisation.
-
-Previous BUSCO interpretation note:
-
-```text
-BUSCO v5.3.2
-mode: proteins
-lineage: metazoa_odb10
-C:95.6% [S:52.9%, D:42.7%], F:2.6%, M:1.8%, n:954
-```
-
-The high duplicated BUSCO fraction is biologically/technically important and should be used as a conservative validation layer for dark-candidate prioritisation.
 
 ## Immediate next action
 
-Run BUSCO-backed validation on Maxwell:
+Rerun figures using the BUSCO-backed prioritised table and push only the updated compact tables/figures:
 
 ```bash
 cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
 
-git pull
-
-sbatch scripts/run_busco_duplication_validation.sh
-```
-
-If BUSCO is not available as `busco`, load the relevant module or activate the correct conda environment, then rerun. If an existing BUSCO full table already exists, the script should reuse it. To force a known BUSCO full table, run:
-
-```bash
-BUSCO_FULL_TABLE=/path/to/full_table.tsv \
-sbatch scripts/run_busco_duplication_validation.sh
-```
-
-After completion, inspect:
-
-```bash
 PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
 
-cat "${PROJECT_DIR}/05_busco/equina_representative_longest_per_gene_metazoa_odb10/short_summary.txt"
-cat "${PROJECT_DIR}/07_duplication_context/equina_duplication_context.summary.txt"
+GENOME_LINKED_TSV="${PROJECT_DIR}/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv" \
+PRIORITISED_TSV="${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
+BUSCO_FULL_TABLE="${PROJECT_DIR}/05_busco/equina_representative_longest_per_gene_metazoa_odb10/full_table.tsv" \
+bash scripts/make_figures.sh
+```
+
+Then confirm:
+
+```bash
+cat "${PROJECT_DIR}/08_figures/figure_tables/figure_13_duplication_interpretation_counts.tsv"
 cat "${PROJECT_DIR}/08_figures/figure_tables/figure_14_priority_tier_counts.tsv"
 ```
 
-The updated duplication summary should no longer say:
+After confirmation, commit/push the updated figures, compact figure tables, duplication summary, and tracker. Keep full generated TSVs local/ignored.
 
-```text
-BUSCO full table: NA
-```
+## Next phase after figure refresh
 
-## Next phase after BUSCO-backed validation
-
-After BUSCO-backed prioritisation has been rerun and committed, return to repeat/TE-overlap integration using:
+Return to repeat/TE-overlap integration using:
 
 ```text
 scripts/add_repeat_overlap_context.py
@@ -222,7 +216,7 @@ scripts/add_repeat_overlap_context.py
 
 ## Remaining biological validation steps
 
-- [ ] Run BUSCO-backed duplication validation.
+- [ ] Refresh Figures 13–15 from BUSCO-backed prioritisation.
 - [ ] Run repeat/TE-overlap context.
 - [ ] Add methylation/DMR overlap context.
 - [ ] Add RNA-seq expression evidence.
