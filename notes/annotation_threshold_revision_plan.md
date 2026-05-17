@@ -2,9 +2,9 @@
 
 ## Current phase
 
-The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, and BUSCO-backed figure refresh are complete.
+The `revise-homology-filtering` branch has been pushed successfully with large generated TSVs excluded from Git. The core functional annotation, master-table construction, dark-candidate extraction, genome linking, genome-linking multiplicity QC, candidate-level duplication/prioritisation, BUSCO-backed duplication validation, BUSCO-backed figure refresh, and filtered repeat/TE-overlap integration are complete.
 
-The active phase is repeat/TE-overlap integration for the 4,531 dark candidates. The first repeat-overlap run completed, but it was diagnostic rather than final because the original script treated all GFF3 features as repeat intervals. The script has now been patched to restrict GFF3 input to repeat-like feature types by default, so the repeat-overlap step should be rerun before moving to methylation/DMR integration.
+The active phase is now methylation/DMR overlap integration for the 4,531 dark candidates.
 
 ## Repository status
 
@@ -18,7 +18,7 @@ The active phase is repeat/TE-overlap integration for the 4,531 dark candidates.
 - BUSCO-backed validation wrapper is tracked: `scripts/run_busco_duplication_validation.sh`.
 - BUSCO-backed compact figure tables and figures are tracked.
 - Repeat-overlap workflow script is tracked: `scripts/add_repeat_overlap_context.py`.
-- First repeat-overlap summary/table are tracked, but should be considered diagnostic because they include non-repeat GFF3 feature types such as `downstream_region`, `cds`, and GMAP/gene features.
+- Filtered repeat/TE-overlap table and summary are tracked.
 
 The branch is currently diverged from `main` because `main` contains a small `.gitignore` update made while the branch was being cleaned. This can be resolved by merging or rebasing after the current branch state is stable.
 
@@ -181,67 +181,51 @@ Interpretation: BUSCO validation moved 220 candidates into an assembly-redundanc
 ### Repeat/TE-overlap integration
 
 - [X] Add `scripts/add_repeat_overlap_context.py`.
-- [X] Run first repeat-overlap pass using `00_raw/combined_annotations.gff3`.
-- [X] Confirm first pass produced 4,531 candidate rows.
-- [X] Identify that the first pass was not TE-specific because the combined GFF3 contributed non-repeat features.
+- [X] Run first diagnostic repeat-overlap pass using `00_raw/combined_annotations.gff3`.
+- [X] Confirm diagnostic pass produced 4,531 candidate rows.
+- [X] Identify that the diagnostic pass was not TE-specific because the combined GFF3 contributed non-repeat features.
 - [X] Patch `scripts/add_repeat_overlap_context.py` so GFF3 input is restricted to repeat-like feature types by default.
-- [ ] Rerun repeat/TE overlap with the patched script.
+- [X] Rerun repeat/TE overlap with the patched script.
+- [X] Confirm filtered repeat/TE-overlap summary and candidate table are tracked.
 
-Diagnostic first-pass repeat-overlap summary:
+Confirmed filtered repeat/TE-overlap summary:
 
 ```text
 Candidate rows read: 4531
-Repeat records parsed: 2048120
-Repeat records skipped: 1490
-repeat_overlap: 4531
+GFF3 feature filtering enabled: True
+parsed_gff3: 978221
+gff3_feature_type_filtered: 1069899
+comment_or_blank: 1490
+repeat/TE contigs indexed: 1486
+repeat_overlap: 3329
+no_repeat_overlap: 1202
 ```
 
-Reason this pass is diagnostic only: top labels included `downstream_region`, `cds`, and GMAP/gene-model features, indicating that all GFF3 features were treated as repeats rather than only repeat/TE features.
+Interpretation: after restricting to repeat-like GFF3 feature types, 3,329 dark candidates overlap repeat/TE-like intervals and 1,202 do not. The previous all-features result should be treated as diagnostic only.
 
-## Active issue: rerun repeat/TE-overlap using repeat-like feature filter
+## Active issue: methylation/DMR overlap integration
 
-The patched script now defaults to these GFF3 feature types:
+Next, integrate methylation/DMR context with the BUSCO- and repeat-aware prioritised dark candidates.
+
+The preferred input for candidate intervals is:
 
 ```text
-dispersed_repeat,repeat_region,repeat,transposable_element,transposable_element_gene,mobile_genetic_element,ltr_retrotransposon,non_ltr_retrotransposon,retrotransposon,dna_transposon,helitron,sine,line,ltr,long_terminal_repeat,tandem_repeat,satellite_dna,simple_repeat,low_complexity_region
+09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
 ```
 
-Use the same command as before; do not pass `--include-all-gff3-features`.
+The DMR input should be a BED-like or TSV file with at least contig, start, and end columns. If multiple DMR sets exist, run each separately first, then merge summaries later.
 
 ## Immediate next action
 
-Rerun repeat-overlap context using the patched script:
+Locate the DMR/methylation interval files on Maxwell, then run a DMR-overlap script against the repeat-aware candidate table. A reusable script should produce:
 
-```bash
-cd /uoa/home/r02hw22/sharedscratch/project_dark_genes
-
-git pull
-
-PROJECT_DIR=/uoa/scratch/users/r02hw22/project_dark_genes
-
-python3 scripts/add_repeat_overlap_context.py \
-  --candidates "${PROJECT_DIR}/07_duplication_context/equina_dark_candidates.prioritised.tsv" \
-  --repeats "${PROJECT_DIR}/00_raw/combined_annotations.gff3" \
-  --outdir "${PROJECT_DIR}/09_repeat_overlap" \
-  --prefix equina_dark_candidates \
-  --candidate-id-column protein_id \
-  --contig-column contig \
-  --start-column transcript_start \
-  --end-column transcript_end
+```text
+10_methylation_overlap/equina_dark_candidates.dmr_overlap.tsv
+10_methylation_overlap/equina_dark_candidates.dmr_overlap.summary.txt
 ```
-
-After running, inspect:
-
-```bash
-cat "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.summary.txt"
-awk -F '\t' 'NR>1 {sum++} END {print sum}' "${PROJECT_DIR}/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv"
-```
-
-The repeat-overlap table should still contain 4,531 candidate rows, but overlap counts should now reflect only repeat/TE-like features.
 
 ## Remaining biological validation steps
 
-- [ ] Rerun repeat/TE-overlap context with patched feature filtering.
 - [ ] Add methylation/DMR overlap context.
 - [ ] Add RNA-seq expression evidence.
 - [ ] Flag expressed versus unsupported dark candidates.
