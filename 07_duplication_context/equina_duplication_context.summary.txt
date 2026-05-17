@@ -3,15 +3,15 @@ Dark candidate BUSCO/duplication context summary
 Genome-linked candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_dark_candidates.genome_linked.primary.tsv
 GFF3 lookup TSV: /uoa/scratch/users/r02hw22/project_dark_genes/06_genome_lookup/equina_gff3_gene_transcript_protein_contig_lookup.tsv
 Dark FASTA: /uoa/scratch/users/r02hw22/project_dark_genes/03_dark_candidates/equina_dark_candidates.all.fa
-BUSCO full table: NA
+BUSCO full table: /uoa/scratch/users/r02hw22/project_dark_genes/05_busco/equina_representative_longest_per_gene_metazoa_odb10/full_table.tsv
 Cluster method: exact_python_fallback
 Cluster file: /uoa/scratch/users/r02hw22/project_dark_genes/07_duplication_context/equina_dark_candidate_clusters.exact.tsv
 BUSCO duplicated-scaffold threshold: 3 unique duplicated BUSCO IDs
 
 BUSCO duplication context:
-- Total BUSCO rows parsed: 0
-- Duplicated BUSCO loci parsed: 0
-- BUSCO-duplication-rich scaffolds: 0
+- Total BUSCO rows parsed: 1497
+- Duplicated BUSCO loci parsed: 950
+- BUSCO-duplication-rich scaffolds: 74
 
 Protein clustering:
 - Cluster rows written: 4531
@@ -22,11 +22,13 @@ Protein clustering:
 
 Duplication interpretation counts:
 - single_copy_or_no_near_identical_dark_duplicate: 2926
-- possible_biological_gene_family_expansion: 1605
+- possible_biological_gene_family_expansion: 1385
+- possible_assembly_redundancy_or_haplotig_duplication: 220
 
 Priority tier counts:
-- high_priority: 4209
-- medium_priority: 322
+- high_priority: 3903
+- medium_priority: 420
+- low_priority_or_manual_review: 208
 
 Outputs:
 - Duplicated BUSCO loci: /uoa/scratch/users/r02hw22/project_dark_genes/07_duplication_context/equina_busco_duplicate_loci.tsv
