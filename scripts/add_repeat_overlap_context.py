@@ -5,12 +5,10 @@ Inputs:
   --candidates : TSV with contig and genomic coordinate columns
   --repeats    : GFF3 or BED repeat annotation
 
-Outputs:
-  <prefix>.repeat_overlap.tsv
-  <prefix>.repeat_overlap.summary.txt
-
-Candidate and GFF3 coordinates are treated as 1-based closed intervals.
-BED intervals are converted from 0-based half-open to 1-based closed.
+By default, GFF3 input is restricted to repeat-like feature types. This avoids
+counting ordinary gene-annotation features such as CDS, mRNA, gene, promoter, or
+downstream_region as repeat/TE overlaps. BED input is assumed to already contain
+repeat intervals and is not feature-type filtered.
 """
 
 import argparse
@@ -32,9 +30,31 @@ except OverflowError:
         except OverflowError:
             continue
 
+DEFAULT_GFF3_REPEAT_FEATURES = {
+    "dispersed_repeat",
+    "repeat_region",
+    "repeat",
+    "transposable_element",
+    "transposable_element_gene",
+    "mobile_genetic_element",
+    "ltr_retrotransposon",
+    "non_ltr_retrotransposon",
+    "retrotransposon",
+    "dna_transposon",
+    "helitron",
+    "sine",
+    "line",
+    "ltr",
+    "long_terminal_repeat",
+    "tandem_repeat",
+    "satellite_dna",
+    "simple_repeat",
+    "low_complexity_region",
+}
+
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Annotate dark candidates with repeat-overlap context.")
+    p = argparse.ArgumentParser(description="Annotate dark candidates with repeat/TE overlap context.")
     p.add_argument("--candidates", required=True)
     p.add_argument("--repeats", required=True)
     p.add_argument("--outdir", required=True)
@@ -44,6 +64,16 @@ def parse_args():
     p.add_argument("--start-column", default="transcript_start")
     p.add_argument("--end-column", default="transcript_end")
     p.add_argument("--min-overlap-bp", type=int, default=1)
+    p.add_argument(
+        "--gff3-feature-types",
+        default=",".join(sorted(DEFAULT_GFF3_REPEAT_FEATURES)),
+        help="Comma-separated GFF3 feature types to treat as repeat/TE features. BED input is unaffected.",
+    )
+    p.add_argument(
+        "--include-all-gff3-features",
+        action="store_true",
+        help="Disable GFF3 feature-type filtering. Use only for diagnostic checks, not final TE overlap.",
+    )
     return p.parse_args()
 
 
@@ -85,17 +115,24 @@ def get_repeat_label(attrs, fallback):
     return fallback
 
 
-def parse_repeat_line(line):
+def parse_repeat_line(line, allowed_gff3_types, include_all_gff3=False):
     if not line.strip() or line.startswith("#"):
-        return None
+        return None, "comment_or_blank"
+
     parts = line.rstrip("\n").split("\t")
+
     if len(parts) == 9:
         contig, source, ftype, start, end, score, strand, phase, attrs_raw = parts
+        ftype_norm = ftype.strip().lower()
+        if not include_all_gff3 and ftype_norm not in allowed_gff3_types:
+            return None, "gff3_feature_type_filtered"
+
         start_i, end_i = to_int(start), to_int(end)
         if start_i is None or end_i is None:
-            return None
+            return None, "bad_coordinates"
         if end_i < start_i:
             start_i, end_i = end_i, start_i
+
         attrs = parse_attrs(attrs_raw)
         label = get_repeat_label(attrs, ftype)
         return {
@@ -105,11 +142,12 @@ def parse_repeat_line(line):
             "label": label,
             "feature_type": ftype,
             "source": source,
-        }
+        }, "parsed_gff3"
+
     if len(parts) >= 3:
         start0, end0 = to_int(parts[1]), to_int(parts[2])
         if start0 is None or end0 is None:
-            return None
+            return None, "bad_coordinates"
         label = parts[3] if len(parts) >= 4 else "repeat_interval"
         return {
             "contig": parts[0],
@@ -118,26 +156,28 @@ def parse_repeat_line(line):
             "label": label,
             "feature_type": "BED_repeat_interval",
             "source": "BED",
-        }
-    return None
+        }, "parsed_bed"
+
+    return None, "unrecognised_format"
 
 
-def read_repeats(path):
+def read_repeats(path, allowed_gff3_types, include_all_gff3=False):
     by_contig = defaultdict(list)
-    parsed = 0
-    skipped = 0
+    parse_counts = Counter()
+
     with open(path, "r", encoding="utf-8", errors="replace") as handle:
         for line in handle:
-            repeat = parse_repeat_line(line)
+            repeat, status = parse_repeat_line(line, allowed_gff3_types, include_all_gff3)
+            parse_counts[status] += 1
             if repeat is None:
-                skipped += 1
                 continue
             by_contig[repeat["contig"]].append(repeat)
-            parsed += 1
+
     for contig in by_contig:
         by_contig[contig].sort(key=lambda r: (r["start"], r["end"]))
+
     starts = {contig: [r["start"] for r in rows] for contig, rows in by_contig.items()}
-    return by_contig, starts, parsed, skipped
+    return by_contig, starts, parse_counts
 
 
 def merge_intervals(intervals):
@@ -176,7 +216,18 @@ def find_overlaps(contig, start, end, repeats, starts, min_bp):
 def main():
     args = parse_args()
     os.makedirs(args.outdir, exist_ok=True)
-    repeats, starts, n_repeats, n_skipped = read_repeats(args.repeats)
+
+    allowed_gff3_types = {
+        x.strip().lower()
+        for x in args.gff3_feature_types.split(",")
+        if x.strip()
+    }
+
+    repeats, starts, parse_counts = read_repeats(
+        args.repeats,
+        allowed_gff3_types,
+        include_all_gff3=args.include_all_gff3_features,
+    )
 
     with open(args.candidates, "r", newline="", encoding="utf-8", errors="replace") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
@@ -204,6 +255,7 @@ def main():
         start = to_int(row.get(args.start_column))
         end = to_int(row.get(args.end_column))
         out = dict(row)
+
         if not contig or start is None or end is None:
             status = "no_candidate_coordinates"
             out.update({
@@ -216,15 +268,19 @@ def main():
             status_counts[status] += 1
             out_rows.append(out)
             continue
+
         if end < start:
             start, end = end, start
+
         interval_bp = end - start + 1
         hits = find_overlaps(contig, start, end, repeats, starts, args.min_overlap_bp)
         clipped = merge_intervals([(max(start, h["start"]), min(end, h["end"])) for h in hits])
         unique_bp = sum(e - s + 1 for s, e in clipped)
         labels = Counter(h["label"] for h in hits)
+
         for label, count in labels.items():
             label_counts[label] += count
+
         status = "repeat_overlap" if hits else "no_repeat_overlap"
         status_counts[status] += 1
         out.update({
@@ -246,18 +302,22 @@ def main():
             writer.writerow(row)
 
     with open(summary_txt, "w", encoding="utf-8") as summary:
-        summary.write("Dark candidate repeat-overlap summary\n")
-        summary.write("=====================================\n")
+        summary.write("Dark candidate repeat/TE-overlap summary\n")
+        summary.write("========================================\n")
         summary.write(f"Candidate TSV: {args.candidates}\n")
         summary.write(f"Repeat annotation: {args.repeats}\n")
         summary.write(f"Output directory: {args.outdir}\n")
         summary.write(f"Candidate rows read: {len(rows)}\n")
-        summary.write(f"Repeat records parsed: {n_repeats}\n")
-        summary.write(f"Repeat records skipped: {n_skipped}\n")
+        summary.write(f"GFF3 feature filtering enabled: {not args.include_all_gff3_features}\n")
+        summary.write(f"Allowed GFF3 repeat feature types: {','.join(sorted(allowed_gff3_types))}\n")
+        summary.write("\nRepeat annotation parse counts:\n")
+        for key, value in parse_counts.most_common():
+            summary.write(f"- {key}: {value}\n")
+        summary.write(f"- repeat/TE contigs indexed: {len(repeats)}\n")
         summary.write("\nRepeat-overlap status counts:\n")
         for key, value in status_counts.most_common():
             summary.write(f"- {key}: {value}\n")
-        summary.write("\nTop overlapping repeat labels:\n")
+        summary.write("\nTop overlapping repeat/TE labels:\n")
         for key, value in label_counts.most_common(25):
             summary.write(f"- {key}: {value}\n")
         summary.write("\nOutputs:\n")
