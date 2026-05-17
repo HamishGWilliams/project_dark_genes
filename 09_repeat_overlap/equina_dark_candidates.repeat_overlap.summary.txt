@@ -1,17 +1,23 @@
-Dark candidate repeat-overlap summary
-=====================================
+Dark candidate repeat/TE-overlap summary
+========================================
 Candidate TSV: /uoa/scratch/users/r02hw22/project_dark_genes/07_duplication_context/equina_dark_candidates.prioritised.tsv
 Repeat annotation: /uoa/scratch/users/r02hw22/project_dark_genes/00_raw/combined_annotations.gff3
 Output directory: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap
 Candidate rows read: 4531
-Repeat records parsed: 2048120
-Repeat records skipped: 1490
+GFF3 feature filtering enabled: True
+Allowed GFF3 repeat feature types: dispersed_repeat,dna_transposon,helitron,line,long_terminal_repeat,low_complexity_region,ltr,ltr_retrotransposon,mobile_genetic_element,non_ltr_retrotransposon,repeat,repeat_region,retrotransposon,satellite_dna,simple_repeat,sine,tandem_repeat,transposable_element,transposable_element_gene
+
+Repeat annotation parse counts:
+- gff3_feature_type_filtered: 1069899
+- parsed_gff3: 978221
+- comment_or_blank: 1490
+- repeat/TE contigs indexed: 1486
 
 Repeat-overlap status counts:
-- repeat_overlap: 4531
+- repeat_overlap: 3329
+- no_repeat_overlap: 1202
 
-Top overlapping repeat labels:
-- downstream_region: 1495
+Top overlapping repeat/TE labels:
 - rnd-1_family-154 1 53: 93
 - rnd-1_family-206 1 4859: 92
 - rnd-1_family-206 4 4859: 84
@@ -19,23 +25,24 @@ Top overlapping repeat labels:
 - rnd-1_family-913 1 178: 49
 - rnd-1_family-567 1 55: 45
 - rnd-1_family-13 1 775: 41
-- cds.evm.utg2007.18: 40
 - rnd-1_family-206 4 4858: 39
-- cds.evm.utg2007.18.1.5c22ecb4: 36
-- cds.evm.utg2007.18.2.5c22ecb4: 36
-- gmap_gene_find_equina_smart_1447778.path1: 36
-- cds.evm.utg2007.18.4.5c22ecb4: 35
-- cds.evm.utg2007.18.3.5c22ecb4: 35
 - rnd-6_family-5610 1938 1992: 32
 - rnd-1_family-1078 13 131: 31
-- cds.evm.utg107.15: 28
-- gmap_gene_find_equina_smart_1167581.path1: 26
-- cds.evm.utg4796.12: 26
 - rnd-1_family-206 44 4859: 24
-- gmap_gene_find_equina_smart_1447777.path1: 24
 - rnd-6_family-949 6217 6371: 23
 - (CAC)n 1 23: 23
 - rnd-5_family-1370 1 248: 21
+- rnd-1_family-154 1 58: 20
+- rnd-5_family-1370 247 617: 19
+- rnd-1_family-154 1 56: 17
+- rnd-5_family-5100 860 911: 17
+- rnd-1_family-161 1 323: 16
+- rnd-1_family-206 58 4859: 16
+- rnd-1_family-125 1 2799: 16
+- rnd-6_family-29044 254 326: 16
+- rnd-1_family-274 1 2640: 16
+- rnd-5_family-1370 1 116: 15
+- rnd-4_family-1201 2928 3156: 15
 
 Outputs:
 - Candidate repeat-overlap table: /uoa/scratch/users/r02hw22/project_dark_genes/09_repeat_overlap/equina_dark_candidates.repeat_overlap.tsv
