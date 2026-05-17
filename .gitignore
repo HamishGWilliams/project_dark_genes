@@ -201,6 +201,12 @@ eggnog_data/
 02_annotation/diamond/raw/
 02_annotation/diamond/filtered/*.diamond.tsv
 
+# BUSCO runs and large outputs generated on HPC
+05_busco/**
+!05_busco/**/short_summary*.txt
+!05_busco/**/full_table*.tsv
+busco_downloads/
+
 # Genome lookup tables
 06_genome_lookup/*.tsv
 
