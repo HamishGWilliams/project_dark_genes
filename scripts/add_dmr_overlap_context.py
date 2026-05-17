@@ -3,13 +3,13 @@
 
 Inputs:
   --candidates : candidate TSV with contig/start/end columns
-  --dmrs       : BED-like or TSV DMR interval file
+  --dmrs       : BED-like or delimited DMR interval file
 
 Outputs:
   <prefix>.dmr_overlap.tsv
   <prefix>.dmr_overlap.summary.txt
 
-Candidate and generic TSV coordinates are treated as 1-based closed intervals.
+Candidate and generic TSV/CSV coordinates are treated as 1-based closed intervals.
 BED coordinates can be interpreted as 0-based half-open with --dmr-format bed.
 """
 
@@ -17,6 +17,7 @@ import argparse
 import bisect
 import csv
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 
@@ -43,7 +44,7 @@ def parse_args():
     p.add_argument("--contig-column", default="contig")
     p.add_argument("--start-column", default="transcript_start")
     p.add_argument("--end-column", default="transcript_end")
-    p.add_argument("--dmr-format", choices=["auto", "bed", "tsv"], default="auto")
+    p.add_argument("--dmr-format", choices=["auto", "bed", "tsv", "csv"], default="auto")
     p.add_argument("--dmr-contig-column", default=None)
     p.add_argument("--dmr-start-column", default=None)
     p.add_argument("--dmr-end-column", default=None)
@@ -54,31 +55,49 @@ def parse_args():
 
 
 def clean(x):
-    x = str(x or "").strip()
-    return "" if x in {"", ".", "NA", "none", "None", "nan"} else x
+    x = str(x or "").strip().strip('"').strip("'")
+    return "" if x in {"", ".", "NA", "none", "None", "nan", "NaN"} else x
 
 
 def to_int(x):
     x = clean(x)
     if not x:
         return None
+    x = x.replace(",", "")
+    match = re.search(r"-?\d+(?:\.\d+)?", x)
+    if not match:
+        return None
     try:
-        return int(float(x.replace(",", "")))
+        return int(float(match.group(0)))
     except Exception:
         return None
 
 
+def detect_delimiter(first_line, forced_format="auto"):
+    if forced_format == "csv":
+        return ","
+    if forced_format in {"tsv", "bed"}:
+        return "\t"
+    if first_line.count(",") > first_line.count("\t"):
+        return ","
+    return "\t"
+
+
 def detect_col(headers, explicit, candidates, label, required=True):
+    headers_clean = [h.strip().strip('"').strip("'") for h in headers]
+    original_by_clean = {hc: h for hc, h in zip(headers_clean, headers)}
     if explicit:
-        if explicit not in headers:
-            raise SystemExit(f"ERROR: requested {label} column {explicit!r} not found")
-        return explicit
-    lower = {h.lower(): h for h in headers}
+        if explicit in headers:
+            return explicit
+        if explicit in original_by_clean:
+            return original_by_clean[explicit]
+        raise SystemExit(f"ERROR: requested {label} column {explicit!r} not found")
+    lower = {h.lower(): original_by_clean[h] for h in headers_clean}
     for cand in candidates:
         if cand.lower() in lower:
             return lower[cand.lower()]
     if required:
-        raise SystemExit(f"ERROR: could not detect {label}. Available columns: {', '.join(headers)}")
+        raise SystemExit(f"ERROR: could not detect {label}. Available columns: {', '.join(headers_clean)}")
     return None
 
 
@@ -93,7 +112,7 @@ def sign_effect(value):
     if not value:
         return "NA"
     try:
-        numeric = float(value)
+        numeric = float(value.replace(",", ""))
     except Exception:
         return value
     if numeric > 0:
@@ -117,25 +136,29 @@ def read_dmrs(path, args):
         if first_data is None:
             return by_contig, {}, parse_counts, detected
 
+    delimiter = detect_delimiter(first_data, args.dmr_format)
+    first_parts = next(csv.reader([first_data], delimiter=delimiter))
+    detected["delimiter"] = "comma" if delimiter == "," else "tab"
+
     with open(path, "r", encoding="utf-8", errors="replace", newline="") as handle:
-        if args.dmr_format == "bed" or (args.dmr_format == "auto" and not looks_like_header(first_data.split("\t"))):
+        if args.dmr_format == "bed" or (args.dmr_format == "auto" and not looks_like_header(first_parts)):
             detected.update({"dmr_format_used": "bed"})
-            for i, line in enumerate(handle, start=1):
-                if not line.strip() or line.startswith("#"):
+            reader = csv.reader(handle, delimiter=delimiter)
+            for i, parts in enumerate(reader, start=1):
+                if not parts or not clean(parts[0]) or clean(parts[0]).startswith("#"):
                     parse_counts["comment_or_blank"] += 1
                     continue
-                parts = line.rstrip("\n").split("\t")
                 if len(parts) < 3:
                     parse_counts["bad_bed_line"] += 1
                     continue
-                contig = parts[0]
+                contig = clean(parts[0])
                 start0 = to_int(parts[1])
                 end0 = to_int(parts[2])
                 if start0 is None or end0 is None:
                     parse_counts["bad_coordinates"] += 1
                     continue
-                dmr_id = parts[3] if len(parts) > 3 and clean(parts[3]) else f"dmr_{i}"
-                effect = parts[4] if len(parts) > 4 and clean(parts[4]) else "NA"
+                dmr_id = clean(parts[3]) if len(parts) > 3 and clean(parts[3]) else f"dmr_{i}"
+                effect = clean(parts[4]) if len(parts) > 4 and clean(parts[4]) else "NA"
                 start = start0 + 1
                 end = end0
                 if end < start:
@@ -144,8 +167,8 @@ def read_dmrs(path, args):
                 by_contig[contig].append({"contig": contig, "start": start, "end": end, "dmr_id": dmr_id, "effect": effect})
                 parse_counts["parsed_bed"] += 1
         else:
-            detected.update({"dmr_format_used": "tsv"})
-            reader = csv.DictReader(handle, delimiter="\t")
+            detected.update({"dmr_format_used": "delimited_table"})
+            reader = csv.DictReader(handle, delimiter=delimiter)
             headers = reader.fieldnames or []
             contig_col = detect_col(
                 headers,
@@ -189,7 +212,7 @@ def read_dmrs(path, args):
                 raw_effect = clean(row.get(effect_col)) if effect_col else "NA"
                 effect = sign_effect(raw_effect)
                 by_contig[contig].append({"contig": contig, "start": start, "end": end, "dmr_id": dmr_id or f"dmr_{i}", "effect": effect or "NA"})
-                parse_counts["parsed_tsv"] += 1
+                parse_counts["parsed_table"] += 1
 
     for contig in by_contig:
         by_contig[contig].sort(key=lambda x: (x["start"], x["end"]))
